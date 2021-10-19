@@ -142,6 +142,7 @@ int main()
 
 	// simple vertex and fragment shader 
 	Shader shader("..\\shaders\\plainVert.vs", "..\\shaders\\plainFrag.fs");
+	shader.use();
 
 
 	/*VAO stuff  - when you are comfortable what all of this is and what it is for - abstract to classes:
@@ -189,6 +190,14 @@ int main()
 	glEnableVertexAttribArray(1);
 
 
+	glm::vec3 lightdir = glm::vec3(0, -1, 0);
+	glm::vec3 lightcolor = glm::vec3(1.0, 1.0, 1.0);
+	glm::vec3 cubecolor = glm::vec3(1, 0.4, 0.4);
+	glm::vec3 floorcolor = glm::vec3(0.1, 0.3, 0.3);
+
+	shader.setVec3("lightcol", lightcolor);
+
+
 	while (!glfwWindowShouldClose(window))
 	{
 		float currentFrame = glfwGetTime();
@@ -203,14 +212,16 @@ int main()
 		glm::mat4 view = camera.GetViewMatrix();
 		glm::mat4 model = glm::mat4(1.0f);
 		// set uniforms - why do we set this each frame?
-	    shader.use();  // do we need this command each frame? - Probably not if we only have one shader
+	    //shader.use();  // do we need this command each frame? - Probably not if we only have one shader
 	    shader.setMat4("projection", projection);
 		shader.setMat4("view", view);
 		shader.setMat4("model", model);
+		shader.setVec3("objectcol", cubecolor);
 
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);   // what happens if we change to GL_LINE?
 		glBindVertexArray(cubeVAO);  // bind and draw cube
 		glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
+		shader.setVec3("objectcol", floorcolor);
 		glBindVertexArray(floorVAO);  // bind and draw floor
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 	
