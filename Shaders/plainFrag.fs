@@ -9,8 +9,8 @@ uniform vec3 objectcol;
 uniform vec3 lightdir;
 uniform vec3 viewpos;
 
-float ambientfactor = 0.5;
-float shine = 64;
+float ambientfactor = 0.3;
+float shine = 256;
 float specularstrength = 0.2;
 
 void main()

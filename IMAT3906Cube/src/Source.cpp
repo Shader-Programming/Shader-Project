@@ -197,6 +197,7 @@ int main()
 
 	shader.setVec3("lightcol", lightcolor);
 	shader.setVec3("lightdir", lightdirection);
+	glEnable(GL_DEPTH_TEST);
 
 
 
@@ -224,6 +225,22 @@ int main()
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);   // what happens if we change to GL_LINE?
 		glBindVertexArray(cubeVAO);  // bind and draw cube
 		glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
+
+		model = glm::translate(model, glm::vec3(0, 0, 2));
+		shader.setMat4("model", model);
+		glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
+
+		model = glm::mat4(1.0);
+
+		model = glm::translate(model, glm::vec3(0, 0, 5));
+		model = glm::rotate(model, (float)glfwGetTime()*0.5f, glm::vec3(2, 2, 2));
+		model = glm::scale(model, glm::vec3(2));
+		shader.setMat4("model", model);
+		glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
+
+
+		model = glm::mat4(1.0);
+		shader.setMat4("model", model);
 		shader.setVec3("objectcol", floorcolor);
 		glBindVertexArray(floorVAO);  // bind and draw floor
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
