@@ -190,12 +190,14 @@ int main()
 	glEnableVertexAttribArray(1);
 
 
-	glm::vec3 lightdir = glm::vec3(0, -1, 0);
+	glm::vec3 lightdirection = glm::vec3(0, -1, 0);
 	glm::vec3 lightcolor = glm::vec3(1.0, 1.0, 1.0);
 	glm::vec3 cubecolor = glm::vec3(1, 0.4, 0.4);
 	glm::vec3 floorcolor = glm::vec3(0.1, 0.3, 0.3);
 
 	shader.setVec3("lightcol", lightcolor);
+	shader.setVec3("lightdir", lightdirection);
+
 
 
 	while (!glfwWindowShouldClose(window))
@@ -217,6 +219,7 @@ int main()
 		shader.setMat4("view", view);
 		shader.setMat4("model", model);
 		shader.setVec3("objectcol", cubecolor);
+		shader.setVec3("viewpos", camera.Position);
 
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);   // what happens if we change to GL_LINE?
 		glBindVertexArray(cubeVAO);  // bind and draw cube
