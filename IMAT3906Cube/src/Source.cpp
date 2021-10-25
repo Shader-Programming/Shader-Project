@@ -10,6 +10,7 @@
 
 #include "Shader.h"
 #include "Camera.h"
+#include "Renderer.h"
 
 #include<string>
 #include <iostream>
@@ -17,7 +18,7 @@
 
 
 
-// settings
+//// settings
 const unsigned int SCR_WIDTH = 1200;
 const unsigned int SCR_HEIGHT = 900;
 
@@ -30,91 +31,91 @@ void processInput(GLFWwindow *window);
 
 // camera
 Camera camera(glm::vec3(0,0,9));
+Renderer renderer(SCR_WIDTH,SCR_HEIGHT);
 float lastX = SCR_WIDTH / 2.0f;
 float lastY = SCR_HEIGHT / 2.0f;
 bool firstMouse = true;
 
 //arrays
-unsigned int floorVBO, cubeVBO, floorEBO, cubeEBO, cubeVAO, floorVAO;
+//unsigned int floorVBO, cubeVBO, floorEBO, cubeEBO, cubeVAO, floorVAO;
 
 // timing
 float deltaTime = 0.0f;
 float lastFrame = 0.0f;
 
 
-// cube data
-float cubeVertices[] = {
-	//back
-		-0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  // 0
-		 0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,   //1
-		 0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
-		-0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
-		
-   //front
-		-0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f,   //4
-		 0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f,
-		 0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,
-		-0.5f, 0.5f,  0.5f,  0.0f,  0.0f,  1.0f,   
-    //left
-		-0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,  //8
-		-0.5f,  0.5f, -0.5f, -1.0f,  0.0f,  0.0f,
-		-0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,		
-		-0.5f, -0.5f,  0.5f, -1.0f,  0.0f,  0.0f,
-   //right
-		 0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,   //12
-		 0.5f,  0.5f, -0.5f,  1.0f,  0.0f,  0.0f,
-		 0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,	
-		 0.5f, -0.5f,  0.5f,  1.0f,  0.0f,  0.0f,
-   //bottom
-		-0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,  //16
-		 0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,
-		 0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,	
-		-0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,
-	//top	
-		-0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f, //20
-		 0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  
-		 0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
-		-0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,   
-		
-};
-
-unsigned int cubeIndices[] = {
-	1,2,3,
-	1,3,0,
-
-	5,6,7,
-	5,7,4,
-
-	11,8,9,
-	11,9,10,
-
-	15,12,13,
-	15,13,14,
-
-	23,22,21,
-	23,21,20
-
-};
-
-
-float floorSize = 5.0f;
-float floorLevel = -2.0f;
-
-float floorVertices[] = {
-		 -floorSize, floorLevel,  -floorSize, 0.0, 1.0, 0.0, 
-		 floorSize, floorLevel,   -floorSize, 0.0, 1.0, 0.0, 
-		 floorSize, floorLevel,  floorSize, 0.0, 1.0, 0.0, 
-		-floorSize, floorLevel,  floorSize, 0.0, 1.0, 0.0, 	
-};
-
-unsigned int floorIndices[] = {
-	3,2,1,
-	3,1,0
-};
-
-
-
-
+//// cube data
+//float cubeVertices[] = {
+//	//back
+//		-0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  // 0
+//		 0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,   //1
+//		 0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
+//		-0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
+//		
+//   //front
+//		-0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f,   //4
+//		 0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f,
+//		 0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,
+//		-0.5f, 0.5f,  0.5f,  0.0f,  0.0f,  1.0f,   
+//    //left		-0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,  //8
+//		-0.5f,  0.5f, -0.5f, -1.0f,  0.0f,  0.0f,
+//		-0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,		
+//		-0.5f, -0.5f,  0.5f, -1.0f,  0.0f,  0.0f,
+//  //right
+//		 0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,   //12
+//		 0.5f,  0.5f, -0.5f,  1.0f,  0.0f,  0.0f,
+//		 0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,	
+//		 0.5f, -0.5f,  0.5f,  1.0f,  0.0f,  0.0f,
+//   //bottom
+//		-0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,  //16
+//		 0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,
+//		 0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,	
+//		-0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,
+//		//top	
+//		-0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f, //20
+//		 0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  
+//		 0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
+//		-0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,   
+//		
+//};
+//
+//unsigned int cubeIndices[] = {
+//	1,2,3,
+//	1,3,0,
+//
+//	5,6,7,
+//	5,7,4,
+//
+//	11,8,9,
+//	11,9,10,
+//
+//	15,12,13,
+//	15,13,14,
+//
+//	23,22,21,
+//	23,21,20
+//
+//};
+//
+//
+//float floorSize = 5.0f;
+//float floorLevel = -2.0f;
+//
+//float floorVertices[] = {
+//		 -floorSize, floorLevel,  -floorSize, 0.0, 1.0, 0.0, 
+//		 floorSize, floorLevel,   -floorSize, 0.0, 1.0, 0.0, 
+//		 floorSize, floorLevel,  floorSize, 0.0, 1.0, 0.0, 
+//		-floorSize, floorLevel,  floorSize, 0.0, 1.0, 0.0, 	
+//};
+//
+//unsigned int floorIndices[] = {
+//	3,2,1,
+//	3,1,0
+//};
+//
+//
+//
+//
 int main()
 {
 	glfwInit();
@@ -139,65 +140,38 @@ int main()
 		std::cout << "Failed to initialize GLAD" << std::endl;
 		return -1;
 	}
-
+	glEnable(GL_DEPTH_TEST);
+	Renderer renderer(SCR_WIDTH, SCR_HEIGHT);
 	// simple vertex and fragment shader 
 	Shader shader("..\\shaders\\plainVert.vs", "..\\shaders\\plainFrag.fs");
 	shader.use();
-
-
 	/*VAO stuff  - when you are comfortable what all of this is and what it is for - abstract to classes:
 	  cube and floor class ( or plane class - can use for walls too!)*/
-	  
-	// Create VAO
-	// Cube
-	glGenVertexArrays(1, &cubeVAO);
-	glGenBuffers(1, &cubeVBO);
-	glGenBuffers(1, &cubeEBO);
-
-	glBindVertexArray(cubeVAO);
-	// fill VBO with vertex data
-	glBindBuffer(GL_ARRAY_BUFFER, cubeVBO);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(cubeVertices), cubeVertices, GL_STATIC_DRAW);
-	// fill EBO with index data
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, cubeEBO);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(cubeIndices), cubeIndices, GL_STATIC_DRAW);
-
-	// position attribute
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
-	glEnableVertexAttribArray(0);
-	// normal attribute
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
-	glEnableVertexAttribArray(1);
-
-	//Floor
-	glGenVertexArrays(1, &floorVAO);
-	glGenBuffers(1, &floorVBO);
-	glGenBuffers(1, &floorEBO);
-
-	glBindVertexArray(floorVAO);
-
-	glBindBuffer(GL_ARRAY_BUFFER, floorVBO);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(floorVertices), floorVertices, GL_STATIC_DRAW);
-
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, floorEBO);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(floorIndices), floorIndices, GL_STATIC_DRAW);
-
-	// position attribute
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
-	glEnableVertexAttribArray(0);
-	// normal attribute
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
-	glEnableVertexAttribArray(1);
+//
+//	//Floor
+//	glGenVertexArrays(1, &floorVAO);
+//	glGenBuffers(1, &floorVBO);
+//	glGenBuffers(1, &floorEBO);
+//
+//	glBindVertexArray(floorVAO);
+//
+//	glBindBuffer(GL_ARRAY_BUFFER, floorVBO);
+//	glBufferData(GL_ARRAY_BUFFER, sizeof(floorVertices), floorVertices, GL_STATIC_DRAW);
+//
+//	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, floorEBO);
+//	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(floorIndices), floorIndices, GL_STATIC_DRAW);
+//
+//	// position attribute
+//	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
+//	glEnableVertexAttribArray(0);
+//	// normal attribute
+//	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
+//	glEnableVertexAttribArray(1);
 
 
-	glm::vec3 lightdirection = glm::vec3(0, -1, 0);
-	glm::vec3 lightcolor = glm::vec3(1.0, 1.0, 1.0);
-	glm::vec3 cubecolor = glm::vec3(1, 0.4, 0.4);
-	glm::vec3 floorcolor = glm::vec3(0.1, 0.3, 0.3);
-
-	shader.setVec3("lightcol", lightcolor);
-	shader.setVec3("lightdir", lightdirection);
-	glEnable(GL_DEPTH_TEST);
+	//glm::vec3 cubecolor = glm::vec3(1, 0.4, 0.4);
+	//glm::vec3 floorcolor = glm::vec3(0.1, 0.3, 0.3);
+	//void setuniform();
 
 
 
@@ -210,41 +184,41 @@ int main()
 		processInput(window);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);	
 
-		// MVP 
-		glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 1000.0f);
-		glm::mat4 view = camera.GetViewMatrix();
-		glm::mat4 model = glm::mat4(1.0f);
+		//// MVP 
+		//glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 1000.0f);
+		//glm::mat4 view = camera.GetViewMatrix();
+		//glm::mat4 model = glm::mat4(1.0f);
 		// set uniforms - why do we set this each frame?
 	    //shader.use();  // do we need this command each frame? - Probably not if we only have one shader
-	    shader.setMat4("projection", projection);
-		shader.setMat4("view", view);
-		shader.setMat4("model", model);
-		shader.setVec3("objectcol", cubecolor);
-		shader.setVec3("viewpos", camera.Position);
+	 //   shader.setMat4("projection", projection);
+		//shader.setMat4("view", view);
+		//shader.setMat4("model", model);
+		//shader.setVec3("objectcol", cubecolor);
+		//shader.setVec3("viewpos", camera.Position);
 
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);   // what happens if we change to GL_LINE?
-		glBindVertexArray(cubeVAO);  // bind and draw cube
-		glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
+		//glBindVertexArray(cubeVAO);  // bind and draw cube
+		//glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
 
-		model = glm::translate(model, glm::vec3(0, 0, 2));
-		shader.setMat4("model", model);
-		glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
+		//model = glm::translate(model, glm::vec3(0, 0, 2));
+		//shader.setMat4("model", model);
+		//glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
 
-		model = glm::mat4(1.0);
+		//model = glm::mat4(1.0);
 
-		model = glm::translate(model, glm::vec3(0, 0, 5));
-		model = glm::rotate(model, (float)glfwGetTime()*0.5f, glm::vec3(2, 2, 2));
-		model = glm::scale(model, glm::vec3(2));
-		shader.setMat4("model", model);
-		glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
+		//model = glm::translate(model, glm::vec3(0, 0, 5));
+		//model = glm::rotate(model, (float)glfwGetTime()*0.5f, glm::vec3(2, 2, 2));
+		//model = glm::scale(model, glm::vec3(2));
+		//shader.setMat4("model", model);
+		//glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
 
 
-		model = glm::mat4(1.0);
-		shader.setMat4("model", model);
-		shader.setVec3("objectcol", floorcolor);
-		glBindVertexArray(floorVAO);  // bind and draw floor
-		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-	
+		//model = glm::mat4(1.0);
+		//shader.setMat4("model", model);
+		//shader.setVec3("objectcol", floorcolor);
+		//glBindVertexArray(floorVAO);  // bind and draw floor
+		//glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+		renderer.RenderScene(shader, camera);
 		glfwSwapBuffers(window);
 		glfwPollEvents();
 	}
@@ -306,6 +280,26 @@ void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 	camera.ProcessMouseScroll(yoffset);
 }
 
+void setuniform(Shader& shader) {
+	//dir light
+	glm::vec3 lightdirection = glm::vec3(0, -1, 0);
+	glm::vec3 lightcolor = glm::vec3(1.0, 1.0, 1.0);
+
+	shader.setVec3("lightcol", lightcolor);
+	shader.setVec3("lightdir", lightdirection);
+
+	//spot light
+	glm::vec3 plightpos = glm::vec3(2.0, 3.0, 4.0);
+	glm::vec3 plightcol = glm::vec3(5.0, 0.0, 0.0);
+	float kc = 1.0f;
+	float kl = 0.22f;
+	float ke = 0.2f;
+	shader.setVec3("plight.pos", plightpos);
+	shader.setVec3("plight.col", plightcol);
+	shader.setFloat("plight.kc", kc);
+	shader.setFloat("plight.kl", kl);
+	shader.setFloat("plight.ke", ke);
+}
 
 
 
