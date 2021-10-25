@@ -10,9 +10,9 @@ uniform vec3 lightdir;
 uniform vec3 viewpos;
 vec3 getdirlight(vec3 norm, vec3 viewdir);
 
-float ambientfactor = 0.3;
-float shine = 256;
-float specularstrength = 0.2;
+float ambientfactor = 0.3; //0.3
+float shine = 256; //256
+float specularstrength = 0.2; //0.2
 
 struct pointlight{
     vec3 pos;

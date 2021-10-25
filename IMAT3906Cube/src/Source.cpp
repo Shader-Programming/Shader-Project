@@ -16,6 +16,9 @@
 #include <iostream>
 #include <numeric>
 
+#include "Cube.h"
+#include "Floor.h"
+
 
 
 //// settings
