@@ -29,16 +29,16 @@ void main()
     //ambient
     vec3 norm = normalize(normal);
     vec3 viewdir = normalize(viewpos-posWS);
-    result = vec3(0,0);
+    vec3 result = vec3(0,0);
     result = getdirlight(norm,viewdir);
 
     //point light stuff
     float dist = length(plight.pos-posWS);
-    float attn = 1.0/(plight.kc + (plight.kl*dist)+(plighjt).ke*(dist*dist)));
+    float attn = 1.0/(plight.kc + (plight.kl*dist)+(plight).ke*(dist*dist));
     vec3 plightdir = normalize(plight.pos-posWS);
 
     vec3 ambientcol = lightcol*objectcol*ambientfactor;
-    ambientcol = ambientcol|*attn;
+    ambientcol = ambientcol*attn;
 
     float diffusefactor = dot(norm,plightdir);
     diffusefactor = max(diffusefactor,0.0);
@@ -65,7 +65,6 @@ vec3 getdirlight(vec3 norm, vec3 viewdir){
     vec3 diffusecolor = lightcol*objectcol*diffusefactor;
 
     //specular
-    vec3 viewdir = normalize(viewpos-posWS);
     vec3 reflectdir = reflect(lightdir,norm);
     float specularfactor = dot(viewdir,reflectdir);
     specularfactor = max(specularfactor,0.0);

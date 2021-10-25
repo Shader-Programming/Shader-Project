@@ -31,7 +31,6 @@ void processInput(GLFWwindow *window);
 
 // camera
 Camera camera(glm::vec3(0,0,9));
-Renderer renderer(SCR_WIDTH,SCR_HEIGHT);
 float lastX = SCR_WIDTH / 2.0f;
 float lastY = SCR_HEIGHT / 2.0f;
 bool firstMouse = true;
