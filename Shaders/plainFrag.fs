@@ -29,7 +29,7 @@ void main()
     //ambient
     vec3 norm = normalize(normal);
     vec3 viewdir = normalize(viewpos-posWS);
-    vec3 result = vec3(0,0);
+    vec3 result = vec3(0,0,0);
     result = getdirlight(norm,viewdir);
 
     //point light stuff

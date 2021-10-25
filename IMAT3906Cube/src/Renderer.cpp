@@ -101,7 +101,6 @@ void Renderer::CreateCube() {
 
 		23,22,21,
 		23,21,20
-
 	};
 
 
@@ -142,4 +141,25 @@ void Renderer::CreateFloor() {
 		3,2,1,
 		3,1,0
 	};
+
+	// Create VAO
+	// Floor
+	glGenVertexArrays(1, &floorVAO);
+	glGenBuffers(1, &floorVBO);
+	glGenBuffers(1, &floorEBO);
+
+	glBindVertexArray(floorVAO);
+	// fill VBO with vertex data
+	glBindBuffer(GL_ARRAY_BUFFER, floorVBO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(floorVertices), floorVertices, GL_STATIC_DRAW);
+	// fill EBO with index data
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, floorEBO);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(floorIndices), floorIndices, GL_STATIC_DRAW);
+
+	// position attribute
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
+	glEnableVertexAttribArray(0);
+	// normal attribute
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
+	glEnableVertexAttribArray(1);
 }

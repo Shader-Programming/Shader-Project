@@ -115,6 +115,29 @@ float lastFrame = 0.0f;
 //
 //
 //
+
+void SetUniform(Shader& shader) {
+	//dir light
+	glm::vec3 lightdirection = glm::vec3(0, -1, 0);
+	glm::vec3 lightcolor = glm::vec3(1.0, 1.0, 1.0);
+
+	shader.setVec3("lightcol", lightcolor);
+	shader.setVec3("lightdir", lightdirection);
+
+	//spot light
+	glm::vec3 plightpos = glm::vec3(2.0, 3.0, 4.0);
+	glm::vec3 plightcol = glm::vec3(5.0, 0.0, 0.0);
+	float kc = 1.0f;
+	float kl = 0.22f;
+	float ke = 0.2f;
+	shader.setVec3("plight.pos", plightpos);
+	shader.setVec3("plight.col", plightcol);
+	shader.setFloat("plight.kc", kc);
+	shader.setFloat("plight.kl", kl);
+	shader.setFloat("plight.ke", ke);
+}
+
+
 int main()
 {
 	glfwInit();
@@ -144,6 +167,9 @@ int main()
 	// simple vertex and fragment shader 
 	Shader shader("..\\shaders\\plainVert.vs", "..\\shaders\\plainFrag.fs");
 	shader.use();
+
+	SetUniform(shader);
+
 	/*VAO stuff  - when you are comfortable what all of this is and what it is for - abstract to classes:
 	  cube and floor class ( or plane class - can use for walls too!)*/
 //
@@ -278,28 +304,3 @@ void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 {
 	camera.ProcessMouseScroll(yoffset);
 }
-
-void setuniform(Shader& shader) {
-	//dir light
-	glm::vec3 lightdirection = glm::vec3(0, -1, 0);
-	glm::vec3 lightcolor = glm::vec3(1.0, 1.0, 1.0);
-
-	shader.setVec3("lightcol", lightcolor);
-	shader.setVec3("lightdir", lightdirection);
-
-	//spot light
-	glm::vec3 plightpos = glm::vec3(2.0, 3.0, 4.0);
-	glm::vec3 plightcol = glm::vec3(5.0, 0.0, 0.0);
-	float kc = 1.0f;
-	float kl = 0.22f;
-	float ke = 0.2f;
-	shader.setVec3("plight.pos", plightpos);
-	shader.setVec3("plight.col", plightcol);
-	shader.setFloat("plight.kc", kc);
-	shader.setFloat("plight.kl", kl);
-	shader.setFloat("plight.ke", ke);
-}
-
-
-
-
