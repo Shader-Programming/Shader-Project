@@ -1,9 +1,28 @@
 #include "Cube.h"
 
-Cube::Cube(float s, glm::vec3 t) {
-	scale = s;
-	translation = t;
+Cube::Cube() {
 
+}
+
+void Cube::RenderCube(Shader& shader) {
+	shader.setVec3("objectcol", cubecolor);
+	glBindVertexArray(cubeVAO);  // bind and draw cube
+	glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
+
+	glm::mat4 model = glm::mat4(1.0f);
+	model = glm::translate(model, glm::vec3(0, 0, -5));
+	shader.setMat4("model", model);
+	glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
+
+	model = glm::mat4(1.0);
+	model = glm::translate(model, glm::vec3(0, 0, 5));
+	//model = glm::rotate(model, (float)glfwGetTime() * 0.5f, glm::vec3(2, 2, 2));
+	model = glm::scale(model, glm::vec3(2));
+	shader.setMat4("model", model);
+	glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
+}
+
+void Cube::CreateCube() {
 	// cube data
 	float cubeVertices[] = {
 		//back
@@ -78,22 +97,4 @@ Cube::Cube(float s, glm::vec3 t) {
 	// normal attribute
 	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
 	glEnableVertexAttribArray(1);
-}
-
-void Cube::RenderCube(Shader& shader) {
-	shader.setVec3("objectcol", cubecolor);
-	glBindVertexArray(cubeVAO);  // bind and draw cube
-	glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
-
-	glm::mat4 model = glm::mat4(1.0f);
-	model = glm::translate(model, translation);
-	shader.setMat4("model", model);
-	glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
-
-	model = glm::mat4(1.0);
-	model = glm::translate(model, glm::vec3(0, 0, 5));
-	//model = glm::rotate(model, (float)glfwGetTime() * 0.5f, glm::vec3(2, 2, 2));
-	model = glm::scale(model, glm::vec3(2));
-	shader.setMat4("model", model);
-	glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
 }

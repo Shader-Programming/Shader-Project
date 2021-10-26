@@ -10,7 +10,7 @@ uniform vec3 lightdir;
 uniform vec3 viewpos;
 vec3 getdirlight(vec3 norm, vec3 viewdir);
 
-float ambientfactor = 0.3; //0.3
+float ambientfactor = 0.8; //0.3
 float shine = 256; //256
 float specularstrength = 0.2; //0.2
 
@@ -30,7 +30,7 @@ void main()
     vec3 norm = normalize(normal);
     vec3 viewdir = normalize(viewpos-posWS);
     vec3 result = vec3(0,0,0);
-    result = getdirlight(norm,viewdir);
+    //result = getdirlight(norm,viewdir);
 
     //point light stuff
     float dist = length(plight.pos-posWS);

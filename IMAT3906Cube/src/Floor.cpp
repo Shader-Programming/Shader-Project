@@ -1,6 +1,19 @@
 #include "Floor.h"
 
 Floor::Floor() {
+	
+}
+
+void Floor::RenderFloor(Shader& shader) {
+	shader.setVec3("objectcol", floorcolor);
+	glm::mat4 model = glm::mat4(1.0);
+	shader.setMat4("model", model);
+	shader.setVec3("objectcol", floorcolor);
+	glBindVertexArray(floorVAO);  // bind and draw floor
+	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+}
+
+void Floor::CreateFloor() {
 	float floorSize = 5.0f;
 	float floorLevel = -2.0f;
 	float floorVertices[] = {
@@ -35,13 +48,4 @@ Floor::Floor() {
 	// normal attribute
 	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
 	glEnableVertexAttribArray(1);
-}
-
-void Floor::RenderFloor(Shader& shader) {
-	shader.setVec3("objectcol", floorcolor);
-	glm::mat4 model = glm::mat4(1.0);
-	shader.setMat4("model", model);
-	shader.setVec3("objectcol", floorcolor);
-	glBindVertexArray(floorVAO);  // bind and draw floor
-	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 }

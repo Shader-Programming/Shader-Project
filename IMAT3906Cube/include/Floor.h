@@ -13,6 +13,7 @@
 class Floor {
 public:
 	Floor();
+	void CreateFloor();
 	void RenderFloor(Shader& shader);
 private:
 	unsigned int floorVBO, floorEBO, floorVAO;

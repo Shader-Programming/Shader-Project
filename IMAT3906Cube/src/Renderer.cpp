@@ -5,6 +5,7 @@ Renderer::Renderer(unsigned int scrw,unsigned int scrh) {
 	const unsigned int SCR_HEIGHT = 900;
 	screenH = scrh;
 	screenW = scrw;
+	CreateObjects();
 }
 void Renderer::RenderScene(Shader& shader,Camera camera) {
 	// MVP 
@@ -16,4 +17,10 @@ void Renderer::RenderScene(Shader& shader,Camera camera) {
 	shader.setMat4("model", model);
 	shader.setVec3("viewpos", camera.Position);
 	//Render
+	cube1.RenderCube(shader);
+	floor1.RenderFloor(shader);
+}
+void Renderer::CreateObjects() {
+	cube1.CreateCube();
+	floor1.CreateFloor();
 }

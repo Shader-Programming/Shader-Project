@@ -170,7 +170,6 @@ int main()
 	// simple vertex and fragment shader 
 	Shader shader("..\\shaders\\plainVert.vs", "..\\shaders\\plainFrag.fs");
 	shader.use();
-
 	SetUniform(shader);
 
 	/*VAO stuff  - when you are comfortable what all of this is and what it is for - abstract to classes:

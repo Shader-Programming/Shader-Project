@@ -19,6 +19,9 @@ public:
 	void RenderScene(Shader& shader,Camera cam);
 private:
 	unsigned int screenW, screenH;
+	void CreateObjects();
+	Cube cube1;
+	Floor floor1;
 };
 
 #endif

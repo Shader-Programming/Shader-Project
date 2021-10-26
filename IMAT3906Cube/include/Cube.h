@@ -12,11 +12,10 @@
 
 class Cube {
 public:
-	Cube(float s,glm::vec3 t);
+	Cube();
+	void CreateCube();
 	void RenderCube(Shader& shader);
 private:
 	unsigned int cubeVBO, cubeEBO, cubeVAO;
 	glm::vec3 cubecolor = glm::vec3(1, 0.4, 0.4);
-	float scale;
-	glm::vec3 translation;
 };
