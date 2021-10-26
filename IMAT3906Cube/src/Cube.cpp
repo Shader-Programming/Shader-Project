@@ -10,13 +10,13 @@ void Cube::RenderCube(Shader& shader) {
 	glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
 
 	glm::mat4 model = glm::mat4(1.0f);
-	model = glm::translate(model, glm::vec3(0, 0, -5));
+	model = glm::translate(model, glm::vec3(0, 0, -2));
 	shader.setMat4("model", model);
 	glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
 
 	model = glm::mat4(1.0);
-	model = glm::translate(model, glm::vec3(0, 0, 5));
-	//model = glm::rotate(model, (float)glfwGetTime() * 0.5f, glm::vec3(2, 2, 2));
+	model = glm::translate(model, glm::vec3(0, 0, 2));
+	model = glm::rotate(model, (float)glfwGetTime() * 0.5f, glm::vec3(2, 2, 2));
 	model = glm::scale(model, glm::vec3(2));
 	shader.setMat4("model", model);
 	glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
@@ -73,7 +73,10 @@ void Cube::CreateCube() {
 		15,13,14,
 
 		23,22,21,
-		23,21,20
+		23,21,20,
+
+		16,17,18,
+		16,18,19
 	};
 
 
