@@ -8,9 +8,11 @@ uniform vec3 lightcol;
 uniform vec3 objectcol;
 uniform vec3 lightdir;
 uniform vec3 viewpos;
-vec3 getdirlight(vec3 norm, vec3 viewdir);
 
-float ambientfactor = 0.8; //0.3
+vec3 getdirlight(vec3 norm, vec3 viewdir);
+vec3 getpointlight(vec3 norm, vec3 viewdir);
+
+float ambientfactor = 0.3; //0.3
 float shine = 256; //256
 float specularstrength = 0.2; //0.2
 
@@ -30,8 +32,32 @@ void main()
     vec3 norm = normalize(normal);
     vec3 viewdir = normalize(viewpos-posWS);
     vec3 result = vec3(0,0,0);
-    //result = getdirlight(norm,viewdir);
+    result = getdirlight(norm,viewdir);
+    vec3 plresult = getpointlight(norm,viewdir);
+    result = result + plresult;
+    FragColor = vec4(result, 1.0);
+}
 
+vec3 getdirlight(vec3 norm, vec3 viewdir){
+    vec3 ambientcol = lightcol*objectcol*ambientfactor;
+
+    //diffuse
+    float diffusefactor = dot(norm,-lightdir);
+    diffusefactor = max(diffusefactor,0);
+    vec3 diffusecolor = lightcol*objectcol*diffusefactor;
+
+    //specular
+    vec3 reflectdir = reflect(lightdir,norm);
+    float specularfactor = dot(viewdir,reflectdir);
+    specularfactor = max(specularfactor,0.0);
+    specularfactor = pow(specularfactor,shine);
+    vec3 specularcol = lightcol*specularfactor*specularstrength;
+
+    vec3 result = ambientcol+diffusecolor+specularcol;
+    return result;
+}
+
+vec3 getpointlight(vec3 norm,vec3 viewdir){
     //point light stuff
     float dist = length(plight.pos-posWS);
     float attn = 1.0/(plight.kc + (plight.kl*dist)+(plight).ke*(dist*dist));
@@ -51,26 +77,6 @@ void main()
     specularfactor = pow(specularfactor,shine);
     vec3 specularcol = lightcol*specularfactor*specularstrength;
     specularcol = specularcol*attn;
-    vec3 pointlightresult = ambientcol+diffusecolor+specularcol;
-    result = result+pointlightresult;
-    FragColor = vec4(result, 1.0);
-}
-
-vec3 getdirlight(vec3 norm, vec3 viewdir){
-    vec3 ambientcol = lightcol*objectcol*ambientfactor;
-
-    //diffuse
-    float diffusefactor = dot(norm,-lightdir);
-    diffusefactor = max(diffusefactor,0);
-    vec3 diffusecolor = lightcol*objectcol*diffusefactor;
-
-    //specular
-    vec3 reflectdir = reflect(lightdir,norm);
-    float specularfactor = dot(viewdir,reflectdir);
-    specularfactor = max(specularfactor,0.0);
-    specularfactor = pow(specularfactor,shine);
-    vec3 specularcol = lightcol*specularfactor*specularstrength;
-
     vec3 result = ambientcol+diffusecolor+specularcol;
     return result;
 }
