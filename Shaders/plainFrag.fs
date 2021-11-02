@@ -4,17 +4,20 @@ out vec4 FragColor;
 
 in vec3 normal ;
 in vec3 posWS;
+in vec2 UV;
 uniform vec3 lightcol;
 uniform vec3 objectcol;
 uniform vec3 lightdir;
 uniform vec3 viewpos;
+
+uniform sampler2D diffusetexture;
 
 vec3 getdirlight(vec3 norm, vec3 viewdir);
 vec3 getpointlight(vec3 norm, vec3 viewdir);
 vec3 getsplotlight(vec3 norm, vec3 viewdir);
 vec3 getrimlight(vec3 norm, vec3 viewdir);
 
-float ambientfactor = 0.3; //0.3
+float ambientfactor = 0.6; //0.3
 float shine = 256; //256
 float specularstrength = 0.2; //0.2
 
@@ -67,12 +70,13 @@ void main()
 }
 
 vec3 getdirlight(vec3 norm, vec3 viewdir){
-    vec3 ambientcol = lightcol*objectcol*ambientfactor;
+    vec3 diffmapcol = texture(diffusetexture,UV).xyz;
+    vec3 ambientcol = lightcol*diffmapcol*ambientfactor;
 
     //diffuse
     float diffusefactor = dot(norm,-lightdir);
     diffusefactor = max(diffusefactor,0);
-    vec3 diffusecolor = lightcol*objectcol*diffusefactor;
+    vec3 diffusecolor = lightcol*diffmapcol*diffusefactor;
 
     //specular
     vec3 reflectdir = reflect(lightdir,norm);
@@ -91,12 +95,13 @@ vec3 getpointlight(vec3 norm,vec3 viewdir){
     float attn = 1.0/(plight.kc + (plight.kl*dist)+(plight).ke*(dist*dist));
     vec3 plightdir = normalize(plight.pos-posWS);
 
-    vec3 ambientcol = plight.col*objectcol*ambientfactor;
+    vec3 diffmapcol = texture(diffusetexture,UV).xyz;
+    vec3 ambientcol = plight.col*diffmapcol*ambientfactor;
     ambientcol = ambientcol*attn;
 
     float diffusefactor = dot(norm,plightdir);
     diffusefactor = max(diffusefactor,0.0);
-    vec3 diffusecolor = plight.col*objectcol*diffusefactor;
+    vec3 diffusecolor = plight.col*diffmapcol*diffusefactor;
     diffusecolor = diffusecolor*attn;
 
     vec3 reflectdir = reflect(plightdir,norm);
@@ -115,9 +120,10 @@ vec3 getsplotlight(vec3 norm, vec3 viewdir){
     float attn = 1.0/(slight.kc + (slight.kl*dist)+(slight).ke*(dist*dist));
     vec3 slightdir = normalize(slight.pos-posWS);
 
+    vec3 diffmapcol = texture(diffusetexture,UV).xyz;
     float diffusefactor = dot(norm,slightdir);
     diffusefactor = max(diffusefactor,0.0);
-    vec3 diffusecolor = slight.col*objectcol*diffusefactor;
+    vec3 diffusecolor = slight.col*diffmapcol*diffusefactor;
     diffusecolor = diffusecolor*attn;
 
     vec3 reflectdir = reflect(slightdir,norm);

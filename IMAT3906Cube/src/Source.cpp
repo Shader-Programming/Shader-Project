@@ -32,6 +32,8 @@ void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 void processInput(GLFWwindow *window);
 
 
+
+
 // camera
 Camera camera(glm::vec3(0,0,9));
 float lastX = SCR_WIDTH / 2.0f;
@@ -70,6 +72,49 @@ void SetUniform(Shader& shader) {
 	shader.setFloat("slight.ke", 0.0028f);
 	shader.setFloat("slight.innerrad", glm::cos(glm::radians(12.5f)));
 	shader.setFloat("slight.outerrad", glm::cos(glm::radians(17.5f)));
+
+	shader.setInt("diffusetexture", 0);
+}
+
+unsigned int LoadTexture(char const* filepath) {
+	unsigned int textureID;
+	glGenTextures(1, &textureID);
+
+	int width, height, nrcomps;
+	unsigned char* data = stbi_load(filepath, &width, &height, &nrcomps, 0);
+
+	if (data) {
+		GLenum format;
+		switch (nrcomps)
+		{
+		case(1):
+			format = GL_RED;
+			break;
+
+		case(3):
+			format = GL_RGB;
+			break;
+
+		case(4):
+			format = GL_RGBA;
+			break;
+		}
+		glBindTexture(GL_TEXTURE_2D, textureID);
+		glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
+		glGenerateMipmap(GL_TEXTURE_2D);
+
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		stbi_image_free(data);
+		std::cout << "loaded" << std::endl;
+	}
+	else {
+		stbi_image_free(data);
+		std::cout << "error" << std::endl;
+	}
+	return textureID;
 }
 
 
@@ -99,9 +144,12 @@ int main()
 	}
 	glEnable(GL_DEPTH_TEST);
 	Renderer renderer(SCR_WIDTH, SCR_HEIGHT);
+	unsigned int diffusetexture = LoadTexture("..\\Textures\\diffuse.jpg");
 	// simple vertex and fragment shader 
 	Shader shader("..\\shaders\\plainVert.vs", "..\\shaders\\plainFrag.fs");
 	shader.use();
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, diffusetexture);
 	SetUniform(shader);
 
 	while (!glfwWindowShouldClose(window))
