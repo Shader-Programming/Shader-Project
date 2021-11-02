@@ -38,86 +38,9 @@ float lastX = SCR_WIDTH / 2.0f;
 float lastY = SCR_HEIGHT / 2.0f;
 bool firstMouse = true;
 
-//arrays
-//unsigned int floorVBO, cubeVBO, floorEBO, cubeEBO, cubeVAO, floorVAO;
-
 // timing
 float deltaTime = 0.0f;
 float lastFrame = 0.0f;
-
-
-//// cube data
-//float cubeVertices[] = {
-//	//back
-//		-0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  // 0
-//		 0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,   //1
-//		 0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
-//		-0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
-//		
-//   //front
-//		-0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f,   //4
-//		 0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f,
-//		 0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,
-//		-0.5f, 0.5f,  0.5f,  0.0f,  0.0f,  1.0f,   
-//    //left		-0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,  //8
-//		-0.5f,  0.5f, -0.5f, -1.0f,  0.0f,  0.0f,
-//		-0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,		
-//		-0.5f, -0.5f,  0.5f, -1.0f,  0.0f,  0.0f,
-//  //right
-//		 0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,   //12
-//		 0.5f,  0.5f, -0.5f,  1.0f,  0.0f,  0.0f,
-//		 0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,	
-//		 0.5f, -0.5f,  0.5f,  1.0f,  0.0f,  0.0f,
-//   //bottom
-//		-0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,  //16
-//		 0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,
-//		 0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,	
-//		-0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,
-//		//top	
-//		-0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f, //20
-//		 0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  
-//		 0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
-//		-0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,   
-//		
-//};
-//
-//unsigned int cubeIndices[] = {
-//	1,2,3,
-//	1,3,0,
-//
-//	5,6,7,
-//	5,7,4,
-//
-//	11,8,9,
-//	11,9,10,
-//
-//	15,12,13,
-//	15,13,14,
-//
-//	23,22,21,
-//	23,21,20
-//
-//};
-//
-//
-//float floorSize = 5.0f;
-//float floorLevel = -2.0f;
-//
-//float floorVertices[] = {
-//		 -floorSize, floorLevel,  -floorSize, 0.0, 1.0, 0.0, 
-//		 floorSize, floorLevel,   -floorSize, 0.0, 1.0, 0.0, 
-//		 floorSize, floorLevel,  floorSize, 0.0, 1.0, 0.0, 
-//		-floorSize, floorLevel,  floorSize, 0.0, 1.0, 0.0, 	
-//};
-//
-//unsigned int floorIndices[] = {
-//	3,2,1,
-//	3,1,0
-//};
-//
-//
-//
-//
 
 void SetUniform(Shader& shader) {
 	//dir light
@@ -138,6 +61,15 @@ void SetUniform(Shader& shader) {
 	shader.setFloat("plight.kc", kc);
 	shader.setFloat("plight.kl", kl);
 	shader.setFloat("plight.ke", ke);
+
+	shader.setVec3("slight.pos", camera.Position);
+	shader.setVec3("slight.direction", (camera.Front));
+	shader.setVec3("slight.col", glm::vec3(1.0f, 1.0f, 1.0f));
+	shader.setFloat("slight.kc", 1.0f);
+	shader.setFloat("slight.kl", 0.027f);
+	shader.setFloat("slight.ke", 0.0028f);
+	shader.setFloat("slight.innerrad", glm::cos(glm::radians(12.5f)));
+	shader.setFloat("slight.outerrad", glm::cos(glm::radians(17.5f)));
 }
 
 
@@ -172,36 +104,6 @@ int main()
 	shader.use();
 	SetUniform(shader);
 
-	/*VAO stuff  - when you are comfortable what all of this is and what it is for - abstract to classes:
-	  cube and floor class ( or plane class - can use for walls too!)*/
-//
-//	//Floor
-//	glGenVertexArrays(1, &floorVAO);
-//	glGenBuffers(1, &floorVBO);
-//	glGenBuffers(1, &floorEBO);
-//
-//	glBindVertexArray(floorVAO);
-//
-//	glBindBuffer(GL_ARRAY_BUFFER, floorVBO);
-//	glBufferData(GL_ARRAY_BUFFER, sizeof(floorVertices), floorVertices, GL_STATIC_DRAW);
-//
-//	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, floorEBO);
-//	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(floorIndices), floorIndices, GL_STATIC_DRAW);
-//
-//	// position attribute
-//	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
-//	glEnableVertexAttribArray(0);
-//	// normal attribute
-//	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
-//	glEnableVertexAttribArray(1);
-
-
-	//glm::vec3 cubecolor = glm::vec3(1, 0.4, 0.4);
-	//glm::vec3 floorcolor = glm::vec3(0.1, 0.3, 0.3);
-	//void setuniform();
-
-
-
 	while (!glfwWindowShouldClose(window))
 	{
 		float currentFrame = glfwGetTime();
@@ -210,41 +112,9 @@ int main()
 
 		processInput(window);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);	
-
-		//// MVP 
-		//glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 1000.0f);
-		//glm::mat4 view = camera.GetViewMatrix();
-		//glm::mat4 model = glm::mat4(1.0f);
-		// set uniforms - why do we set this each frame?
-	    //shader.use();  // do we need this command each frame? - Probably not if we only have one shader
-	 //   shader.setMat4("projection", projection);
-		//shader.setMat4("view", view);
-		//shader.setMat4("model", model);
-		//shader.setVec3("objectcol", cubecolor);
-		//shader.setVec3("viewpos", camera.Position);
-
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);   // what happens if we change to GL_LINE?
-		//glBindVertexArray(cubeVAO);  // bind and draw cube
-		//glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
-
-		//model = glm::translate(model, glm::vec3(0, 0, 2));
-		//shader.setMat4("model", model);
-		//glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
-
-		//model = glm::mat4(1.0);
-
-		//model = glm::translate(model, glm::vec3(0, 0, 5));
-		//model = glm::rotate(model, (float)glfwGetTime()*0.5f, glm::vec3(2, 2, 2));
-		//model = glm::scale(model, glm::vec3(2));
-		//shader.setMat4("model", model);
-		//glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
-
-
-		//model = glm::mat4(1.0);
-		//shader.setMat4("model", model);
-		//shader.setVec3("objectcol", floorcolor);
-		//glBindVertexArray(floorVAO);  // bind and draw floor
-		//glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+		shader.setVec3("slight.pos", camera.Position);
+		shader.setVec3("slight.direction", (camera.Front));
 		renderer.RenderScene(shader, camera);
 		glfwSwapBuffers(window);
 		glfwPollEvents();
