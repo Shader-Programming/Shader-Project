@@ -164,6 +164,8 @@
     <ClCompile Include="src\stb_image.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="..\Shaders\floorFrag.fs" />
+    <None Include="..\Shaders\floorVert.vs" />
     <None Include="..\Shaders\plainFrag.fs" />
     <None Include="..\Shaders\plainVert.vs" />
   </ItemGroup>

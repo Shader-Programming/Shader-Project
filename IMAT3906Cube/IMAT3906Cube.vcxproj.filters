@@ -63,5 +63,7 @@
   <ItemGroup>
     <None Include="..\Shaders\plainFrag.fs" />
     <None Include="..\Shaders\plainVert.vs" />
+    <None Include="..\Shaders\floorVert.vs" />
+    <None Include="..\Shaders\floorFrag.fs" />
   </ItemGroup>
 </Project>

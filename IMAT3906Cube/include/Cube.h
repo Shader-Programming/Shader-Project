@@ -15,6 +15,7 @@ public:
 	Cube();
 	void CreateCube();
 	void RenderCube(Shader& shader);
+	unsigned int cubediff, cubespec;
 private:
 	unsigned int cubeVBO, cubeEBO, cubeVAO;
 	glm::vec3 cubecolor = glm::vec3(1, 0.4, 0.4);

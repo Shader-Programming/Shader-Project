@@ -5,7 +5,15 @@ Floor::Floor() {
 }
 
 void Floor::RenderFloor(Shader& shader) {
+	shader.use();
 	shader.setVec3("objectcol", floorcolor);
+
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, floordiff);
+	glActiveTexture(GL_TEXTURE1);
+	glBindTexture(GL_TEXTURE_2D, floorspec);
+
+
 	glm::mat4 model = glm::mat4(1.0);
 	shader.setMat4("model", model);
 	shader.setVec3("objectcol", floorcolor);

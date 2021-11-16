@@ -17,8 +17,10 @@ class Renderer {
 public:
 
 	Renderer(unsigned int scrw,unsigned int scrh);
-	void RenderScene(Shader& shader,Camera cam);
+	void RenderScene(Shader& shader, Shader& shader2, Camera cam);
 private:
+	void LoadTextureFiles();
+	unsigned int LoadTexture(char const* path);
 	unsigned int screenW, screenH;
 	void CreateObjects();
 	Cube cube1;

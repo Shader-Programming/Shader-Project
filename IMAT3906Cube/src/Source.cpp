@@ -44,7 +44,9 @@ bool firstMouse = true;
 float deltaTime = 0.0f;
 float lastFrame = 0.0f;
 
-void SetUniform(Shader& shader) {
+void SetUniform(Shader& shader, Shader& shader2) {
+	shader.use();
+	//Cube
 	//dir light
 	glm::vec3 lightdirection = glm::vec3(0, -1, 0);
 	glm::vec3 lightcolor = glm::vec3(1.0, 1.0, 1.0);
@@ -74,49 +76,30 @@ void SetUniform(Shader& shader) {
 	shader.setFloat("slight.outerrad", glm::cos(glm::radians(17.5f)));
 
 	shader.setInt("diffusetexture", 0);
+
+	shader2.use();
+	//Floor
+	shader2.setVec3("lightcol", lightcolor);
+	shader2.setVec3("lightdir", lightdirection);
+
+	//spot light
+	shader2.setVec3("plight.pos", plightpos);
+	shader2.setVec3("plight.col", plightcol);
+	shader2.setFloat("plight.kc", kc);
+	shader2.setFloat("plight.kl", kl);
+	shader2.setFloat("plight.ke", ke);
+
+	shader2.setVec3("slight.pos", camera.Position);
+	shader2.setVec3("slight.direction", (camera.Front));
+	shader2.setVec3("slight.col", glm::vec3(1.0f, 1.0f, 1.0f));
+	shader2.setFloat("slight.kc", 1.0f);
+	shader2.setFloat("slight.kl", 0.027f);
+	shader2.setFloat("slight.ke", 0.0028f);
+	shader2.setFloat("slight.innerrad", glm::cos(glm::radians(12.5f)));
+	shader2.setFloat("slight.outerrad", glm::cos(glm::radians(17.5f)));
+
+	shader.setInt("diffusetexture", 0);
 }
-
-unsigned int LoadTexture(char const* filepath) {
-	unsigned int textureID;
-	glGenTextures(1, &textureID);
-
-	int width, height, nrcomps;
-	unsigned char* data = stbi_load(filepath, &width, &height, &nrcomps, 0);
-
-	if (data) {
-		GLenum format;
-		switch (nrcomps)
-		{
-		case(1):
-			format = GL_RED;
-			break;
-
-		case(3):
-			format = GL_RGB;
-			break;
-
-		case(4):
-			format = GL_RGBA;
-			break;
-		}
-		glBindTexture(GL_TEXTURE_2D, textureID);
-		glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
-		glGenerateMipmap(GL_TEXTURE_2D);
-
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-		stbi_image_free(data);
-		std::cout << "loaded" << std::endl;
-	}
-	else {
-		stbi_image_free(data);
-		std::cout << "error" << std::endl;
-	}
-	return textureID;
-}
-
 
 int main()
 {
@@ -144,13 +127,11 @@ int main()
 	}
 	glEnable(GL_DEPTH_TEST);
 	Renderer renderer(SCR_WIDTH, SCR_HEIGHT);
-	unsigned int diffusetexture = LoadTexture("..\\Textures\\diffuse.jpg");
 	// simple vertex and fragment shader 
-	Shader shader("..\\shaders\\plainVert.vs", "..\\shaders\\plainFrag.fs");
-	shader.use();
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, diffusetexture);
-	SetUniform(shader);
+	Shader cubeshader("..\\shaders\\plainVert.vs", "..\\shaders\\plainFrag.fs");
+	Shader floorshader("..\\shaders\\plainVert.vs", "..\\shaders\\plainFrag.fs");
+	cubeshader.use();
+	SetUniform(cubeshader,floorshader);
 
 	while (!glfwWindowShouldClose(window))
 	{
@@ -161,9 +142,9 @@ int main()
 		processInput(window);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);	
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);   // what happens if we change to GL_LINE?
-		shader.setVec3("slight.pos", camera.Position);
-		shader.setVec3("slight.direction", (camera.Front));
-		renderer.RenderScene(shader, camera);
+		cubeshader.setVec3("slight.pos", camera.Position);
+		cubeshader.setVec3("slight.direction", (camera.Front));
+		renderer.RenderScene(cubeshader,floorshader, camera);
 		glfwSwapBuffers(window);
 		glfwPollEvents();
 	}

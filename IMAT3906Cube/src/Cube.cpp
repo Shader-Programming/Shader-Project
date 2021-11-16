@@ -5,7 +5,14 @@ Cube::Cube() {
 }
 
 void Cube::RenderCube(Shader& shader) {
+	shader.use();
 	shader.setVec3("objectcol", cubecolor);
+
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, cubediff);
+	glActiveTexture(GL_TEXTURE1);
+	glBindTexture(GL_TEXTURE_2D, cubespec);
+
 	glBindVertexArray(cubeVAO);  // bind and draw cube
 	glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
 
