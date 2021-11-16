@@ -11,6 +11,8 @@ void Cube::RenderCube(Shader& shader) {
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, cubediff);
 	glActiveTexture(GL_TEXTURE1);
+	glBindTexture(GL_TEXTURE_2D, cubenorm);
+	glActiveTexture(GL_TEXTURE2);
 	glBindTexture(GL_TEXTURE_2D, cubespec);
 
 	glBindVertexArray(cubeVAO);  // bind and draw cube

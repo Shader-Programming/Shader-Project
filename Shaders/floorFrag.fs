@@ -11,13 +11,15 @@ uniform vec3 lightdir;
 uniform vec3 viewpos;
 
 uniform sampler2D diffusetexture;
+uniform sampler2D normalmap;
+uniform sampler2D speculartexture;
 
 vec3 getdirlight(vec3 norm, vec3 viewdir);
 vec3 getpointlight(vec3 norm, vec3 viewdir);
-vec3 getsplotlight(vec3 norm, vec3 viewdir);
+vec3 getspotlight(vec3 norm, vec3 viewdir);
 vec3 getrimlight(vec3 norm, vec3 viewdir);
 
-float ambientfactor = 0.6; //0.3
+float ambientfactor = 0.3; //0.3
 float shine = 256; //256
 float specularstrength = 0.2; //0.2
 
@@ -29,7 +31,7 @@ struct pointlight{
     float ke;
 };
 
-struct splotlight{
+struct spotlight{
     vec3 pos;
     vec3 col;
     float kc;
@@ -52,8 +54,7 @@ struct rimlight{
 };
 
 uniform pointlight plight;
-uniform splotlight slight;
-uniform splotlight rlight;
+uniform spotlight slight;
 
 void main()
 {   
@@ -64,7 +65,7 @@ void main()
     result = getdirlight(norm,viewdir);
     vec3 plresult = getpointlight(norm,viewdir);
     result = result + plresult;
-    vec3 slresult = getsplotlight(norm,viewdir);
+    vec3 slresult = getspotlight(norm,viewdir);
     result = result + slresult;
     FragColor = vec4(result, 1.0);
 }
@@ -114,7 +115,7 @@ vec3 getpointlight(vec3 norm,vec3 viewdir){
     return result;
 }
 
-vec3 getsplotlight(vec3 norm, vec3 viewdir){
+vec3 getspotlight(vec3 norm, vec3 viewdir){
     //spot light stuff
     float dist = length(slight.pos-posWS);
     float attn = 1.0/(slight.kc + (slight.kl*dist)+(slight).ke*(dist*dist));

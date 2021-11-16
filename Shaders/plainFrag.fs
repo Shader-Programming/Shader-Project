@@ -11,13 +11,16 @@ uniform vec3 lightdir;
 uniform vec3 viewpos;
 
 uniform sampler2D diffusetexture;
+uniform sampler2D normalmap;
+uniform sampler2D speculartexture;
+uniform int map;
 
 vec3 getdirlight(vec3 norm, vec3 viewdir);
 vec3 getpointlight(vec3 norm, vec3 viewdir);
-vec3 getsplotlight(vec3 norm, vec3 viewdir);
+vec3 getspotlight(vec3 norm, vec3 viewdir);
 vec3 getrimlight(vec3 norm, vec3 viewdir);
 
-float ambientfactor = 0.6; //0.3
+float ambientfactor = 0.3; //0.3
 float shine = 256; //256
 float specularstrength = 0.2; //0.2
 
@@ -29,7 +32,7 @@ struct pointlight{
     float ke;
 };
 
-struct splotlight{
+struct spotlight{
     vec3 pos;
     vec3 col;
     float kc;
@@ -52,19 +55,25 @@ struct rimlight{
 };
 
 uniform pointlight plight;
-uniform splotlight slight;
-uniform splotlight rlight;
+uniform spotlight slight;
 
 void main()
 {   
-    //ambient
-    vec3 norm = normalize(normal);
+    vec3 newnorm = vec3(0.0);
+    if(map == 1){
+                newnorm = texture(normalmap,UV).xyz;
+                newnorm = newnorm*2.0-1.0;
+                newnorm = normalize(newnorm);
+    }else{
+        //ambient
+        newnorm = normalize(normal);
+    }
     vec3 viewdir = normalize(viewpos-posWS);
     vec3 result = vec3(0,0,0);
-    result = getdirlight(norm,viewdir);
-    vec3 plresult = getpointlight(norm,viewdir);
-    result = result + plresult;
-    vec3 slresult = getsplotlight(norm,viewdir);
+    //result = getdirlight(newnorm,viewdir);
+    //vec3 plresult = getpointlight(newnorm,viewdir);
+    //result = result + plresult;
+    vec3 slresult = getspotlight(newnorm,viewdir);
     result = result + slresult;
     FragColor = vec4(result, 1.0);
 }
@@ -79,11 +88,12 @@ vec3 getdirlight(vec3 norm, vec3 viewdir){
     vec3 diffusecolor = lightcol*diffmapcol*diffusefactor;
 
     //specular
+    float specmapcol = texture(speculartexture,UV).r;
     vec3 reflectdir = reflect(lightdir,norm);
     float specularfactor = dot(viewdir,reflectdir);
     specularfactor = max(specularfactor,0.0);
     specularfactor = pow(specularfactor,shine);
-    vec3 specularcol = lightcol*specularfactor*specularstrength;
+    vec3 specularcol = lightcol*specularfactor*specularstrength*specmapcol;
 
     vec3 result = ambientcol+diffusecolor+specularcol;
     return result;
@@ -104,17 +114,18 @@ vec3 getpointlight(vec3 norm,vec3 viewdir){
     vec3 diffusecolor = plight.col*diffmapcol*diffusefactor;
     diffusecolor = diffusecolor*attn;
 
+    float specmapcol = texture(speculartexture,UV).r;
     vec3 reflectdir = reflect(plightdir,norm);
     float specularfactor = dot(viewdir,reflectdir);
     specularfactor = max(specularfactor,0.0);
     specularfactor = pow(specularfactor,shine);
     vec3 specularcol = plight.col*specularfactor*specularstrength;
-    specularcol = specularcol*attn;
+    specularcol = specularcol*attn*specmapcol;
     vec3 result = ambientcol+diffusecolor+specularcol;
     return result;
 }
 
-vec3 getsplotlight(vec3 norm, vec3 viewdir){
+vec3 getspotlight(vec3 norm, vec3 viewdir){
     //spot light stuff
     float dist = length(slight.pos-posWS);
     float attn = 1.0/(slight.kc + (slight.kl*dist)+(slight).ke*(dist*dist));
@@ -126,6 +137,7 @@ vec3 getsplotlight(vec3 norm, vec3 viewdir){
     vec3 diffusecolor = slight.col*diffmapcol*diffusefactor;
     diffusecolor = diffusecolor*attn;
 
+    float specmapcol = texture(speculartexture,UV).r;
     vec3 reflectdir = reflect(slightdir,norm);
     float specularfactor = dot(viewdir,reflectdir);
     specularfactor = max(specularfactor,0.0);
@@ -138,7 +150,7 @@ vec3 getsplotlight(vec3 norm, vec3 viewdir){
     float illumination = (theta-slight.outerrad)/denom;
     illumination = clamp(illumination,0.0,1.0);
     diffusecolor = diffusecolor*illumination;
-    specularcol = specularcol*illumination;
+    specularcol = specularcol*illumination*specmapcol;
 
     vec3 result = diffusecolor+specularcol;
     return result;

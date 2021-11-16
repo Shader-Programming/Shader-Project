@@ -44,6 +44,8 @@ bool firstMouse = true;
 float deltaTime = 0.0f;
 float lastFrame = 0.0f;
 
+int map = 0;
+
 void SetUniform(Shader& shader, Shader& shader2) {
 	shader.use();
 	//Cube
@@ -66,8 +68,6 @@ void SetUniform(Shader& shader, Shader& shader2) {
 	shader.setFloat("plight.kl", kl);
 	shader.setFloat("plight.ke", ke);
 
-	shader.setVec3("slight.pos", camera.Position);
-	shader.setVec3("slight.direction", (camera.Front));
 	shader.setVec3("slight.col", glm::vec3(1.0f, 1.0f, 1.0f));
 	shader.setFloat("slight.kc", 1.0f);
 	shader.setFloat("slight.kl", 0.027f);
@@ -76,11 +76,11 @@ void SetUniform(Shader& shader, Shader& shader2) {
 	shader.setFloat("slight.outerrad", glm::cos(glm::radians(17.5f)));
 
 	shader.setInt("diffusetexture", 0);
+	shader.setInt("normalmap", 1);
+	shader.setInt("speculartexture", 2);
 
 	shader2.use();
 	//Floor
-	shader2.setVec3("lightcol", lightcolor);
-	shader2.setVec3("lightdir", lightdirection);
 
 	//spot light
 	shader2.setVec3("plight.pos", plightpos);
@@ -89,8 +89,6 @@ void SetUniform(Shader& shader, Shader& shader2) {
 	shader2.setFloat("plight.kl", kl);
 	shader2.setFloat("plight.ke", ke);
 
-	shader2.setVec3("slight.pos", camera.Position);
-	shader2.setVec3("slight.direction", (camera.Front));
 	shader2.setVec3("slight.col", glm::vec3(1.0f, 1.0f, 1.0f));
 	shader2.setFloat("slight.kc", 1.0f);
 	shader2.setFloat("slight.kl", 0.027f);
@@ -98,7 +96,9 @@ void SetUniform(Shader& shader, Shader& shader2) {
 	shader2.setFloat("slight.innerrad", glm::cos(glm::radians(12.5f)));
 	shader2.setFloat("slight.outerrad", glm::cos(glm::radians(17.5f)));
 
-	shader.setInt("diffusetexture", 0);
+	shader2.setInt("diffusetexture", 0);
+	shader2.setInt("normalmap", 1);
+	shader2.setInt("speculartexture", 2);
 }
 
 int main()
@@ -129,12 +129,18 @@ int main()
 	Renderer renderer(SCR_WIDTH, SCR_HEIGHT);
 	// simple vertex and fragment shader 
 	Shader cubeshader("..\\shaders\\plainVert.vs", "..\\shaders\\plainFrag.fs");
-	Shader floorshader("..\\shaders\\plainVert.vs", "..\\shaders\\plainFrag.fs");
-	cubeshader.use();
+	Shader floorshader("..\\shaders\\floorVert.vs", "..\\shaders\\floorFrag.fs");
 	SetUniform(cubeshader,floorshader);
 
 	while (!glfwWindowShouldClose(window))
 	{
+		cubeshader.use();
+		cubeshader.setVec3("slight.pos", camera.Position);
+		cubeshader.setVec3("slight.direction", (camera.Front));
+		cubeshader.setInt("map", map);
+		floorshader.use();
+		floorshader.setVec3("slight.pos", camera.Position);
+		floorshader.setVec3("slight.direction", (camera.Front));
 		float currentFrame = glfwGetTime();
 		deltaTime = currentFrame - lastFrame;
 		lastFrame = currentFrame;
@@ -142,8 +148,6 @@ int main()
 		processInput(window);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);	
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);   // what happens if we change to GL_LINE?
-		cubeshader.setVec3("slight.pos", camera.Position);
-		cubeshader.setVec3("slight.direction", (camera.Front));
 		renderer.RenderScene(cubeshader,floorshader, camera);
 		glfwSwapBuffers(window);
 		glfwPollEvents();
@@ -169,6 +173,9 @@ void processInput(GLFWwindow *window)
 		camera.ProcessKeyboard(LEFT, deltaTime);
 	if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
 		camera.ProcessKeyboard(RIGHT, deltaTime);
+	if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS)
+		if (map == 1) { map = 0; std::cout << "normal enabled" << std::endl; }
+		else { map = 1; }
 }
 
 // glfw: whenever the window size changed (by OS or user resize) this callback function executes

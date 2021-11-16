@@ -33,8 +33,10 @@ void Renderer::CreateObjects() {
 }
 void Renderer::LoadTextureFiles() {
 	cube1.cubediff = LoadTexture("..\\Textures\\metalPlate\\diffuse.jpg");
+	cube1.cubenorm = LoadTexture("..\\Textures\\metalPlate\\normal.jpg");
 	cube1.cubespec = LoadTexture("..\\Textures\\metalPlate\\specular.jpg");
 	floor1.floordiff = LoadTexture("..\\Textures\\metalRust\\diffuse.jpg");
+	floor1.floornorm = LoadTexture("..\\Textures\\metalRust\\normal.jpg");
 	floor1.floorspec = LoadTexture("..\\Textures\\metalRust\\specular.jpg");
 }
 
@@ -70,7 +72,7 @@ unsigned int Renderer::LoadTexture(char const* path) {
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 		stbi_image_free(data);
-		std::cout << "loaded" << std::endl;
+		std::cout << "loaded at path: " << path << std::endl;
 	}
 	else {
 		stbi_image_free(data);

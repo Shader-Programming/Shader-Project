@@ -15,7 +15,7 @@ public:
 	Floor();
 	void CreateFloor();
 	void RenderFloor(Shader& shader);
-	unsigned int floordiff, floorspec;
+	unsigned int floordiff, floornorm, floorspec;
 private:
 	unsigned int floorVBO, floorEBO, floorVAO;
 	const glm::vec3 floorcolor = glm::vec3(0.1, 0.3, 0.3);
