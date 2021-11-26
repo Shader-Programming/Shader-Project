@@ -13,6 +13,7 @@
 #include "Camera.h"
 #include "Cube.h"
 #include "Floor.h"
+#include "normalmapper.h"
 class Renderer {
 public:
 
