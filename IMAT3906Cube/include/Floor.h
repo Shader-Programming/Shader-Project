@@ -9,6 +9,7 @@
 
 #include "Shader.h"
 #include "Camera.h"
+#include "normalmapper.h"
 
 class Floor {
 public:

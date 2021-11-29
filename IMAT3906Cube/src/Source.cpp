@@ -58,7 +58,7 @@ void SetUniform(Shader& shader, Shader& shader2) {
 
 	//spot light
 	glm::vec3 plightpos = glm::vec3(2.0, 3.0, 4.0);
-	glm::vec3 plightcol = glm::vec3(5.0, 0.0, 0.0);
+	glm::vec3 plightcol = glm::vec3(5.0, 5.0, 5.0);
 	float kc = 1.0f;
 	float kl = 0.22f;
 	float ke = 0.2f;
@@ -76,8 +76,8 @@ void SetUniform(Shader& shader, Shader& shader2) {
 	shader.setFloat("slight.outerrad", glm::cos(glm::radians(17.5f)));
 
 	shader.setInt("diffusetexture", 0);
-	shader.setInt("normalmap", 1);
-	shader.setInt("speculartexture", 2);
+	shader.setInt("speculartexture", 1);
+	shader.setInt("normalmap", 2);
 
 	shader2.use();
 	//Floor
@@ -97,8 +97,8 @@ void SetUniform(Shader& shader, Shader& shader2) {
 	shader2.setFloat("slight.outerrad", glm::cos(glm::radians(17.5f)));
 
 	shader2.setInt("diffusetexture", 0);
-	shader2.setInt("normalmap", 1);
-	shader2.setInt("speculartexture", 2);
+	shader2.setInt("speculartexture", 1);
+	shader2.setInt("normalmap", 2);
 }
 
 int main()

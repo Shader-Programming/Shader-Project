@@ -5,6 +5,8 @@ out vec4 FragColor;
 in vec3 normal ;
 in vec3 posWS;
 in vec2 UV;
+in mat3 TBN;
+
 uniform vec3 lightcol;
 uniform vec3 objectcol;
 uniform vec3 lightdir;
@@ -70,7 +72,7 @@ void main()
     }
     vec3 viewdir = normalize(viewpos-posWS);
     vec3 result = vec3(0,0,0);
-    //result = getdirlight(newnorm,viewdir);
+    result = getdirlight(newnorm,viewdir);
     //vec3 plresult = getpointlight(newnorm,viewdir);
     //result = result + plresult;
     vec3 slresult = getspotlight(newnorm,viewdir);

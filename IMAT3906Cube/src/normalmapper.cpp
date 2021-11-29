@@ -46,13 +46,13 @@ void NormalMapper::ExtractVertices(float* vertexdata, int length) {
 void NormalMapper::ComputeTanAndBitan(unsigned int* indicesdata, int indlength) {
 	for (int i = 0; i < indlength; i = i + 3) {
 		vertex& a = vertices.at(indicesdata[i]);
-		vertex& b = vertices.at(indicesdata[i+1]);
-		vertex& c = vertices.at(indicesdata[i+2]);
+		vertex& b = vertices.at(indicesdata[i + 1]);
+		vertex& c = vertices.at(indicesdata[i + 2]);
 
 		//edges of triange (delta P)
 		glm::vec3 deltapos1 = b.pos - a.pos;
 		glm::vec3 deltapos2 = c.pos - a.pos;
-		
+
 		glm::vec2 deltauv1 = b.uv - a.uv;
 		glm::vec2 deltauv2 = c.uv - a.uv;
 
@@ -69,10 +69,10 @@ void NormalMapper::ComputeTanAndBitan(unsigned int* indicesdata, int indlength) 
 
 		c.tan = c.tan + thistangent;
 		c.bitan = c.bitan + thisbitangent;
+	}
 
-		for (vertex& v : vertices) {
-			v.tan = glm::normalize(v.tan);
-			v.bitan = glm::normalize(v.bitan);
-		}
+	for (vertex& v : vertices) {
+		v.tan = glm::normalize(v.tan);
+		v.bitan = glm::normalize(v.bitan);
 	}
 }
