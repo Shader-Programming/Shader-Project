@@ -115,8 +115,8 @@ vec3 getpointlight(vec3 norm,vec3 viewdir){
     float specularfactor = dot(viewdir,reflectdir);
     specularfactor = max(specularfactor,0.0);
     specularfactor = pow(specularfactor,shine);
-    vec3 specularcol = plight.col*specularfactor*specularstrength;
-    specularcol = specularcol*attn*specmapcol;
+    vec3 specularcol = plight.col*specularfactor*specmapcol;
+    specularcol = specularcol*attn;
     vec3 result = ambientcol+diffusecolor+specularcol;
     return result;
 }
@@ -138,7 +138,7 @@ vec3 getspotlight(vec3 norm, vec3 viewdir){
     float specularfactor = dot(viewdir,reflectdir);
     specularfactor = max(specularfactor,0.0);
     specularfactor = pow(specularfactor,shine);
-    vec3 specularcol = slight.col*specularfactor*specularstrength;
+    vec3 specularcol = slight.col*specularfactor*specmapcol;
     specularcol = specularcol*attn;
 
     float theta = dot(-slightdir,normalize(slight.direction));
@@ -146,7 +146,7 @@ vec3 getspotlight(vec3 norm, vec3 viewdir){
     float illumination = (theta-slight.outerrad)/denom;
     illumination = clamp(illumination,0.0,1.0);
     diffusecolor = diffusecolor*illumination;
-    specularcol = specularcol*illumination*specmapcol;
+    specularcol = specularcol*illumination;
 
     vec3 result = diffusecolor+specularcol;
     return result;
