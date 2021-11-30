@@ -23,7 +23,7 @@ vec3 getrimlight(vec3 norm, vec3 viewdir);
 
 float ambientfactor = 0.3; //0.3
 float shine = 256; //256
-float specularstrength = 0.2; //0.2
+float specularstrength = 0.5; //0.2
 
 struct pointlight{
     vec3 pos;
@@ -66,12 +66,12 @@ void main()
 
     vec3 viewdir = normalize(viewpos-posWS);
     vec3 result = vec3(0,0,0);
-    result = getdirlight(newnorm,viewdir);
-    //vec3 plresult = getpointlight(newnorm,viewdir);
-    //result = result + plresult;
+    //result = getdirlight(newnorm,viewdir);
+    vec3 plresult = getpointlight(newnorm,viewdir);
+    result = result + plresult;
     vec3 slresult = getspotlight(newnorm,viewdir);
     result = result + slresult;
-    FragColor = vec4(newnorm, 1.0);
+    FragColor = vec4(result, 1.0);
 }
 
 vec3 getdirlight(vec3 norm, vec3 viewdir){

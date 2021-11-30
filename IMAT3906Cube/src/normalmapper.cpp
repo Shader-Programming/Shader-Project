@@ -36,7 +36,7 @@ void NormalMapper::ExtractVertices(float* vertexdata, int length) {
 	for (int i = 0; i < length; i = i + 8) {
 		V.pos = glm::vec3(vertexdata[i], vertexdata[i + 1], vertexdata[i + 2]);
 		V.normal = glm::vec3(vertexdata[i + 3], vertexdata[i + 4], vertexdata[i + 5]);
-		V.uv = glm::vec3(vertexdata[i + 6], vertexdata[i + 7], vertexdata[i + 8]);
+		V.uv = glm::vec2(vertexdata[i + 6], vertexdata[i + 7]);
 		V.tan = glm::vec3(0.0f, 0.0f, 0.0f);
 		V.bitan = glm::vec3(0.0f, 0.0f, 0.0f);
 		vertices.push_back(V);
@@ -58,7 +58,7 @@ void NormalMapper::ComputeTanAndBitan(unsigned int* indicesdata, int indlength) 
 
 		float r = 1.0f / (deltauv1.x * deltauv2.y - deltauv1.y * deltauv2.x);
 
-		glm::vec3 thistangent = (deltapos1 * deltapos2.y - deltapos2 * deltauv1.y) * r;
+		glm::vec3 thistangent = (deltapos1 * deltauv2.y - deltapos2 * deltauv1.y) * r;
 		glm::vec3 thisbitangent = (deltapos2 * deltauv1.x - deltapos1 * deltauv2.x) * r;
 
 		a.tan = a.tan + thistangent;

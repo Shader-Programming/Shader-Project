@@ -138,6 +138,7 @@ int main()
 		cubeshader.setVec3("slight.pos", camera.Position);
 		cubeshader.setVec3("slight.direction", (camera.Front));
 		cubeshader.setInt("map", map);
+		cubeshader.setVec3("viewpos", (camera.Position));
 		floorshader.use();
 		floorshader.setVec3("slight.pos", camera.Position);
 		floorshader.setVec3("slight.direction", (camera.Front));

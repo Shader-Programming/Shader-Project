@@ -16,6 +16,7 @@ void Cube::RenderCube(Shader& shader) {
 	glBindTexture(GL_TEXTURE_2D, cubenorm);
 
 	glBindVertexArray(cubeVAO);  // bind and draw cube
+	glBindBuffer(GL_ARRAY_BUFFER, cubeVBO);
 	glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
 
 	glm::mat4 model = glm::mat4(1.0f);
@@ -90,6 +91,12 @@ void Cube::CreateCube() {
 
 		16,17,18,
 		16,18,19
+
+		//19,18,17,
+		//19,17,16,
+
+		//23,22,21,
+		//23,21,20
 	};
 
 	NormalMapper normmap;

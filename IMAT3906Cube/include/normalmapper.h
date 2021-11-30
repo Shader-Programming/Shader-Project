@@ -15,7 +15,7 @@
 struct vertex {
 	glm::vec3 pos;
 	glm::vec3 normal;
-	glm::vec3 uv;
+	glm::vec2 uv;
 	glm::vec3 tan;
 	glm::vec3 bitan;
 };

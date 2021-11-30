@@ -20,6 +20,7 @@ void Floor::RenderFloor(Shader& shader) {
 	shader.setMat4("model", model);
 	shader.setVec3("objectcol", floorcolor);
 	glBindVertexArray(floorVAO);  // bind and draw floor
+	glBindBuffer(GL_ARRAY_BUFFER, floorVBO);
 	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 }
 
