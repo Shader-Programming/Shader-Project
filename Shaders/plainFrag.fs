@@ -15,7 +15,6 @@ uniform vec3 viewpos;
 uniform sampler2D diffusetexture;
 uniform sampler2D normalmap;
 uniform sampler2D speculartexture;
-uniform int map;
 
 vec3 getdirlight(vec3 norm, vec3 viewdir);
 vec3 getpointlight(vec3 norm, vec3 viewdir);
@@ -61,15 +60,10 @@ uniform spotlight slight;
 
 void main()
 {   
-    vec3 newnorm = vec3(0.0);
-    if(map == 1){
-                newnorm = texture(normalmap,UV).xyz;
-                newnorm = newnorm*2.0-1.0;
-                newnorm = normalize(newnorm);
-    }else{
-        //ambient
-        newnorm = normalize(normal);
-    }
+    vec3 newnorm = texture(normalmap,UV).xyz;
+    newnorm = newnorm*2.0-1.0;
+    newnorm = normalize(TBN*newnorm);
+
     vec3 viewdir = normalize(viewpos-posWS);
     vec3 result = vec3(0,0,0);
     result = getdirlight(newnorm,viewdir);
@@ -77,7 +71,7 @@ void main()
     //result = result + plresult;
     vec3 slresult = getspotlight(newnorm,viewdir);
     result = result + slresult;
-    FragColor = vec4(result, 1.0);
+    FragColor = vec4(newnorm, 1.0);
 }
 
 vec3 getdirlight(vec3 norm, vec3 viewdir){
