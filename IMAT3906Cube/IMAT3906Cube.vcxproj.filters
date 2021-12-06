@@ -71,5 +71,7 @@
     <None Include="..\Shaders\plainVert.vs" />
     <None Include="..\Shaders\floorVert.vs" />
     <None Include="..\Shaders\floorFrag.fs" />
+    <None Include="..\Shaders\PXmap.fs" />
+    <None Include="..\Shaders\PXmap.vs" />
   </ItemGroup>
 </Project>

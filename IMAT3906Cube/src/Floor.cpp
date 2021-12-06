@@ -14,6 +14,9 @@ void Floor::RenderFloor(Shader& shader) {
 	glBindTexture(GL_TEXTURE_2D, floorspec);
 	glActiveTexture(GL_TEXTURE2);
 	glBindTexture(GL_TEXTURE_2D, floornorm);
+	glActiveTexture(GL_TEXTURE3);
+	glBindTexture(GL_TEXTURE_2D, floordisp);
+
 
 
 	glm::mat4 model = glm::mat4(1.0);
