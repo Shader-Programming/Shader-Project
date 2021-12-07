@@ -83,23 +83,23 @@ void SetUniform(Shader& shader, Shader& shader2) {
 	//Floor
 
 	//spot light
-	//shader2.setVec3("plight.pos", plightpos);
-	//shader2.setVec3("plight.col", plightcol);
-	//shader2.setFloat("plight.kc", kc);
-	//shader2.setFloat("plight.kl", kl);
-	//shader2.setFloat("plight.ke", ke);
+	shader2.setVec3("plight.pos", plightpos);
+	shader2.setVec3("plight.col", plightcol);
+	shader2.setFloat("plight.kc", kc);
+	shader2.setFloat("plight.kl", kl);
+	shader2.setFloat("plight.ke", ke);
 
-	//shader2.setVec3("slight.col", glm::vec3(1.0f, 1.0f, 1.0f));
-	//shader2.setFloat("slight.kc", 1.0f);
-	//shader2.setFloat("slight.kl", 0.027f);
-	//shader2.setFloat("slight.ke", 0.0028f);
-	//shader2.setFloat("slight.innerrad", glm::cos(glm::radians(12.5f)));
-	//shader2.setFloat("slight.outerrad", glm::cos(glm::radians(17.5f)));
+	shader2.setVec3("slight.col", glm::vec3(1.0f, 1.0f, 1.0f));
+	shader2.setFloat("slight.kc", 1.0f);
+	shader2.setFloat("slight.kl", 0.027f);
+	shader2.setFloat("slight.ke", 0.0028f);
+	shader2.setFloat("slight.innerrad", glm::cos(glm::radians(12.5f)));
+	shader2.setFloat("slight.outerrad", glm::cos(glm::radians(17.5f)));
 
-	shader2.setInt("mat.diffusetexture", 0);
-	shader2.setInt("mat.speculartexture", 1);
-	shader2.setInt("mat.normalmap", 2);
-	shader2.setInt("mat.displacementmap", 3);
+	shader2.setInt("diffusetexture", 0);
+	shader2.setInt("speculartexture", 1);
+	shader2.setInt("normalmap", 2);
+	shader2.setInt("displacementmap", 3);
 	shader2.setFloat("PXscale", 0.0175);
 	shader2.setVec3("mat.ambient", glm::vec3(1, 1, 1));
 	shader2.setFloat("mat.shine", 265);
@@ -133,7 +133,7 @@ int main()
 	Renderer renderer(SCR_WIDTH, SCR_HEIGHT);
 	// simple vertex and fragment shader 
 	Shader cubeshader("..\\shaders\\plainVert.vs", "..\\shaders\\plainFrag.fs");
-	Shader floorshader("..\\shaders\\floorVert.vs", "..\\shaders\\PXmap.fs");
+	Shader floorshader("..\\shaders\\floorVert.vs", "..\\shaders\\floorFrag.fs");
 	SetUniform(cubeshader,floorshader);
 
 	while (!glfwWindowShouldClose(window))

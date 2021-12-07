@@ -5,6 +5,8 @@ out vec4 FragColor;
 in vec3 normal ;
 in vec3 posWS;
 in vec2 UV;
+in mat3 TBN;
+
 uniform vec3 lightcol;
 uniform vec3 objectcol;
 uniform vec3 lightdir;
@@ -13,15 +15,21 @@ uniform vec3 viewpos;
 uniform sampler2D diffusetexture;
 uniform sampler2D normalmap;
 uniform sampler2D speculartexture;
+uniform sampler2D displacementmap;
+
+uniform int IsNM;
+uniform float PXscale;
 
 vec3 getdirlight(vec3 norm, vec3 viewdir);
 vec3 getpointlight(vec3 norm, vec3 viewdir);
 vec3 getspotlight(vec3 norm, vec3 viewdir);
 vec3 getrimlight(vec3 norm, vec3 viewdir);
+vec2 ParallaxMapping(vec2 texcoords, vec3 viewdir);
+vec3 DirectionalLight(vec3 normal,vec3 lightdir, vec3 viewdir, vec2 texcoords);
 
 float ambientfactor = 0.3; //0.3
 float shine = 256; //256
-float specularstrength = 0.2; //0.2
+float specularstrength = 0.5; //0.2
 
 struct pointlight{
     vec3 pos;
@@ -58,15 +66,23 @@ uniform spotlight slight;
 
 void main()
 {   
-    //ambient
-    vec3 norm = normalize(normal);
+    vec2 texcoords = UV;
+    vec3 newnorm = texture(normalmap,UV).xyz;
+    newnorm = newnorm*2.0-1.0;
+    newnorm = normalize(TBN*newnorm);
+
     vec3 viewdir = normalize(viewpos-posWS);
     vec3 result = vec3(0,0,0);
-    result = getdirlight(norm,viewdir);
-    vec3 plresult = getpointlight(norm,viewdir);
+    result = getdirlight(newnorm,viewdir);
+    vec3 plresult = getpointlight(newnorm,viewdir);
     result = result + plresult;
-    vec3 slresult = getspotlight(norm,viewdir);
+    vec3 slresult = getspotlight(newnorm,viewdir);
     result = result + slresult;
+
+    if(IsNM == 1){
+        texcoords = ParallaxMapping(UV,viewdir);
+    }
+    result = result+DirectionalLight(newnorm,lightdir,viewdir,texcoords);
     FragColor = vec4(result, 1.0);
 }
 
@@ -80,11 +96,12 @@ vec3 getdirlight(vec3 norm, vec3 viewdir){
     vec3 diffusecolor = lightcol*diffmapcol*diffusefactor;
 
     //specular
+    float specmapcol = texture(speculartexture,UV).r;
     vec3 reflectdir = reflect(lightdir,norm);
     float specularfactor = dot(viewdir,reflectdir);
     specularfactor = max(specularfactor,0.0);
     specularfactor = pow(specularfactor,shine);
-    vec3 specularcol = lightcol*specularfactor*specularstrength;
+    vec3 specularcol = lightcol*specularfactor*specularstrength*specmapcol;
 
     vec3 result = ambientcol+diffusecolor+specularcol;
     return result;
@@ -105,11 +122,12 @@ vec3 getpointlight(vec3 norm,vec3 viewdir){
     vec3 diffusecolor = plight.col*diffmapcol*diffusefactor;
     diffusecolor = diffusecolor*attn;
 
+    float specmapcol = texture(speculartexture,UV).r;
     vec3 reflectdir = reflect(plightdir,norm);
     float specularfactor = dot(viewdir,reflectdir);
     specularfactor = max(specularfactor,0.0);
     specularfactor = pow(specularfactor,shine);
-    vec3 specularcol = plight.col*specularfactor*specularstrength;
+    vec3 specularcol = plight.col*specularfactor*specmapcol;
     specularcol = specularcol*attn;
     vec3 result = ambientcol+diffusecolor+specularcol;
     return result;
@@ -127,11 +145,12 @@ vec3 getspotlight(vec3 norm, vec3 viewdir){
     vec3 diffusecolor = slight.col*diffmapcol*diffusefactor;
     diffusecolor = diffusecolor*attn;
 
+    float specmapcol = texture(speculartexture,UV).r;
     vec3 reflectdir = reflect(slightdir,norm);
     float specularfactor = dot(viewdir,reflectdir);
     specularfactor = max(specularfactor,0.0);
     specularfactor = pow(specularfactor,shine);
-    vec3 specularcol = slight.col*specularfactor*specularstrength;
+    vec3 specularcol = slight.col*specularfactor*specmapcol;
     specularcol = specularcol*attn;
 
     float theta = dot(-slightdir,normalize(slight.direction));
@@ -145,7 +164,20 @@ vec3 getspotlight(vec3 norm, vec3 viewdir){
     return result;
 }
 
-//vec3 getrimlight(vec3 norm, vec3 viewdir){
+vec2 ParallaxMapping(vec2 texcoords, vec3 viewdir){
+    float height = texture(displacementmap,texcoords).r;
+    return texcoords - (viewdir.xy)*(height*PXscale);
+}
 
-//}
+vec3 DirectionalLight(vec3 normal,vec3 lightdir, vec3 viewdir, vec2 texcoords){
+    vec3 ambient = texture(diffusetexture,texcoords).rgb;//*light.ambient;
+    float dif = max(dot(normal,lightdir),0.0);
+    vec3 diffuse = dif*(texture(diffusetexture,texcoords)).rgb;//*light.diffuse;
+    //vec3 reflectdir = reflect(-lightdir,normal);
+    //spec = pow(max(dot(viewdir,reflectdir),0.0),mat.shine);
+    vec3 halfway = normalize(lightdir+viewdir);
+    float spec = pow(max(dot(normal,halfway),0.0),shine);
+    vec3 specular = spec*vec3(texture(speculartexture,texcoords).r);
+    return ambient + diffuse + specular;
+}
 
