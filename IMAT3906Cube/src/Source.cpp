@@ -57,7 +57,7 @@ void SetUniform(Shader& shader, Shader& shader2) {
 	shader.setVec3("lightdir", lightdirection);
 
 	//spot light
-	glm::vec3 plightpos = glm::vec3(2.0, 3.0, 4.0);
+	glm::vec3 plightpos = glm::vec3(0.0, 3.0, -4.0);
 	glm::vec3 plightcol = glm::vec3(5.0, 5.0, 5.0);
 	float kc = 1.0f;
 	float kl = 0.22f;
