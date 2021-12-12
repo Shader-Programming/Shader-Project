@@ -13,11 +13,13 @@
 #include "Camera.h"
 #include "Cube.h"
 #include "Floor.h"
+#include "Quad.h"
 class Renderer {
 public:
 
 	Renderer(unsigned int scrw,unsigned int scrh);
 	void RenderScene(Shader& shader, Shader& shader2, Camera cam);
+	Quad quad1;
 private:
 	void LoadTextureFiles();
 	unsigned int LoadTexture(char const* path);

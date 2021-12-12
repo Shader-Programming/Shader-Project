@@ -30,6 +30,7 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 void processInput(GLFWwindow *window);
+void SetFBOColour();
 
 
 
@@ -46,7 +47,10 @@ float lastFrame = 0.0f;
 
 int map = 0;
 
-void SetUniform(Shader& shader, Shader& shader2) {
+unsigned int myFBO;
+unsigned int colourattachment;
+
+void SetUniform(Shader& shader, Shader& shader2, Shader& shader3) {
 	shader.use();
 	//Cube
 	//dir light
@@ -103,6 +107,9 @@ void SetUniform(Shader& shader, Shader& shader2) {
 	shader2.setFloat("PXscale", 0.0175);
 	shader2.setVec3("mat.ambient", glm::vec3(1, 1, 1));
 	shader2.setFloat("mat.shine", 265);
+
+	shader3.use();
+	shader3.setInt("image", 0);
 }
 
 int main()
@@ -129,13 +136,13 @@ int main()
 		std::cout << "Failed to initialize GLAD" << std::endl;
 		return -1;
 	}
-	glEnable(GL_DEPTH_TEST);
 	Renderer renderer(SCR_WIDTH, SCR_HEIGHT);
 	// simple vertex and fragment shader 
 	Shader cubeshader("..\\shaders\\plainVert.vs", "..\\shaders\\plainFrag.fs");
 	Shader floorshader("..\\shaders\\floorVert.vs", "..\\shaders\\floorFrag.fs");
-	SetUniform(cubeshader,floorshader);
-
+	Shader quadshader("..\\shaders\\PP.vs", "..\\shaders\\PP.fs");
+	SetUniform(cubeshader,floorshader,quadshader);
+	SetFBOColour();
 	while (!glfwWindowShouldClose(window))
 	{
 		cubeshader.use();
@@ -151,9 +158,18 @@ int main()
 		lastFrame = currentFrame;
 
 		processInput(window);
+
+		//First Pass to FBO
+		glBindFramebuffer(GL_FRAMEBUFFER, myFBO);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);	
-		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);   // what happens if we change to GL_LINE?
+		glEnable(GL_DEPTH_TEST);
 		renderer.RenderScene(cubeshader,floorshader, camera);
+
+		//Second Pass to Screen
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		glDisable(GL_DEPTH_TEST);
+		renderer.quad1.RenderQuad(quadshader,colourattachment);
+
 		glfwSwapBuffers(window);
 		glfwPollEvents();
 	}
@@ -216,4 +232,25 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos)
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 {
 	camera.ProcessMouseScroll(yoffset);
+}
+
+void SetFBOColour() {
+	glGenFramebuffers(1, &myFBO);
+	glBindFramebuffer(GL_FRAMEBUFFER, myFBO);
+	glGenTextures(1, &colourattachment);
+	glBindTexture(GL_TEXTURE_2D, colourattachment);
+
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, SCR_WIDTH, SCR_HEIGHT, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, colourattachment, 0);
+
+	unsigned int rbo;
+	glGenRenderbuffers(1, &rbo);
+	glBindRenderbuffer(GL_RENDERBUFFER, rbo);
+	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, SCR_WIDTH, SCR_HEIGHT);
+	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, rbo);
+	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
+		std::cout << "ERROR::FRAMEBUFFER:: framebuffer is not compelte!" << std::endl;
+	}
 }

@@ -30,6 +30,7 @@ void Renderer::RenderScene(Shader& shader, Shader& shader2, Camera camera) {
 void Renderer::CreateObjects() {
 	cube1.CreateCube();
 	floor1.CreateFloor();
+	quad1.CreateQuad();
 }
 void Renderer::LoadTextureFiles() {
 	cube1.cubediff = LoadTexture("..\\Textures\\metalPlate\\diffuse.jpg");
