@@ -79,5 +79,7 @@
     <None Include="..\Shaders\floorFrag.fs" />
     <None Include="..\Shaders\PP.fs" />
     <None Include="..\Shaders\PP.vs" />
+    <None Include="..\Shaders\DPP.fs" />
+    <None Include="..\Shaders\DPP.vs" />
   </ItemGroup>
 </Project>

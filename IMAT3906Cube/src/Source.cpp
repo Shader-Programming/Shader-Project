@@ -30,7 +30,7 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 void processInput(GLFWwindow *window);
-void SetFBOColour();
+void SetFBOColourAndDepth();
 
 
 
@@ -47,10 +47,12 @@ float lastFrame = 0.0f;
 
 int map = 0;
 
-unsigned int myFBO;
-unsigned int colourattachment;
+unsigned int myFBO,MyFBODepth,myFBOColourAndDepth;
+unsigned int depthattachment;
+unsigned int colourattachment[2];
 
-void SetUniform(Shader& shader, Shader& shader2, Shader& shader3) {
+
+void SetUniform(Shader& shader, Shader& shader2, Shader& shader3, Shader& shader4) {
 	shader.use();
 	//Cube
 	//dir light
@@ -110,6 +112,9 @@ void SetUniform(Shader& shader, Shader& shader2, Shader& shader3) {
 
 	shader3.use();
 	shader3.setInt("image", 0);
+
+	shader4.use();
+	shader4.setInt("image", 0);
 }
 
 int main()
@@ -140,9 +145,10 @@ int main()
 	// simple vertex and fragment shader 
 	Shader cubeshader("..\\shaders\\plainVert.vs", "..\\shaders\\plainFrag.fs");
 	Shader floorshader("..\\shaders\\floorVert.vs", "..\\shaders\\floorFrag.fs");
-	Shader quadshader("..\\shaders\\PP.vs", "..\\shaders\\PP.fs");
-	SetUniform(cubeshader,floorshader,quadshader);
-	SetFBOColour();
+	Shader postprocess("..\\shaders\\PP.vs", "..\\shaders\\PP.fs");
+	Shader depthpostprocess("..\\shaders\\DPP.vs", "..\\shaders\\DPP.fs");
+	SetUniform(cubeshader,floorshader, postprocess,depthpostprocess);
+	SetFBOColourAndDepth();
 	while (!glfwWindowShouldClose(window))
 	{
 		cubeshader.use();
@@ -159,8 +165,8 @@ int main()
 
 		processInput(window);
 
-		//First Pass to FBO
-		glBindFramebuffer(GL_FRAMEBUFFER, myFBO);
+		//First Pass to FBO Colour
+		glBindFramebuffer(GL_FRAMEBUFFER, myFBOColourAndDepth);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);	
 		glEnable(GL_DEPTH_TEST);
 		renderer.RenderScene(cubeshader,floorshader, camera);
@@ -168,7 +174,7 @@ int main()
 		//Second Pass to Screen
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 		glDisable(GL_DEPTH_TEST);
-		renderer.quad1.RenderQuad(quadshader,colourattachment);
+		renderer.quad1.RenderQuad(postprocess,colourattachment[0]);
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();
@@ -234,23 +240,30 @@ void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 	camera.ProcessMouseScroll(yoffset);
 }
 
-void SetFBOColour() {
-	glGenFramebuffers(1, &myFBO);
-	glBindFramebuffer(GL_FRAMEBUFFER, myFBO);
-	glGenTextures(1, &colourattachment);
-	glBindTexture(GL_TEXTURE_2D, colourattachment);
+void SetFBOColourAndDepth() {
+	glGenFramebuffers(1, &myFBOColourAndDepth);
+	glBindFramebuffer(GL_FRAMEBUFFER, myFBOColourAndDepth);
+	glGenTextures(2, colourattachment);
+	for (int i = 0; i < 2; i++) {
+		glBindTexture(GL_TEXTURE_2D, colourattachment[i]);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, SCR_WIDTH, SCR_HEIGHT, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0+i, GL_TEXTURE_2D, colourattachment[i], 0);
+	}
 
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, SCR_WIDTH, SCR_HEIGHT, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+	//depth
+	glGenTextures(1, &depthattachment);
+	glBindTexture(GL_TEXTURE_2D, depthattachment);
+
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, SCR_WIDTH, SCR_HEIGHT, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_BYTE, NULL);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, colourattachment, 0);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depthattachment, 0);
 
-	unsigned int rbo;
-	glGenRenderbuffers(1, &rbo);
-	glBindRenderbuffer(GL_RENDERBUFFER, rbo);
-	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, SCR_WIDTH, SCR_HEIGHT);
-	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, rbo);
-	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
-		std::cout << "ERROR::FRAMEBUFFER:: framebuffer is not compelte!" << std::endl;
-	}
+	unsigned int attachments[2] = { GL_COLOR_ATTACHMENT0,GL_COLOR_ATTACHMENT1 };
+	glDrawBuffers(2, attachments);
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
