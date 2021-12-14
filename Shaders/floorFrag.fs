@@ -1,6 +1,7 @@
 #version 410 core
 
-out vec4 FragColor;
+layout (location = 0) out vec4 FragColor;
+layout (location = 1) out vec4 BrightColor;
 
 in vec3 normal ;
 in vec3 posWS;
@@ -84,6 +85,12 @@ void main()
     }
     result = result+DirectionalLight(newnorm,lightdir,viewdir,texcoords);
     FragColor = vec4(result, 1.0);
+    float brightness = max(max(result.r,result.g),result.b);
+    if(brightness > 0.35){
+        BrightColor = FragColor;
+    }else{
+        BrightColor = vec4(vec3(0.0),1.0);
+    }
 }
 
 vec3 getdirlight(vec3 norm, vec3 viewdir){
