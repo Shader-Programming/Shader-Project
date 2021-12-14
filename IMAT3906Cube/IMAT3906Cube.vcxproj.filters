@@ -80,6 +80,6 @@
     <None Include="..\Shaders\PP.fs" />
     <None Include="..\Shaders\PP.vs" />
     <None Include="..\Shaders\DPP.fs" />
-    <None Include="..\Shaders\DPP.vs" />
+    <None Include="..\Shaders\Blur.fs" />
   </ItemGroup>
 </Project>

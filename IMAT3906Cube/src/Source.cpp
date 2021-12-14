@@ -47,8 +47,8 @@ float lastFrame = 0.0f;
 
 int map = 0;
 
-unsigned int myFBO,MyFBODepth,myFBOColourAndDepth;
-unsigned int depthattachment;
+unsigned int myFBO,MyFBODepth,myFBOColourAndDepth,myFBOBlur;
+unsigned int depthattachment,blurredtexture;
 unsigned int colourattachment[2];
 
 
@@ -146,7 +146,8 @@ int main()
 	Shader cubeshader("..\\shaders\\plainVert.vs", "..\\shaders\\plainFrag.fs");
 	Shader floorshader("..\\shaders\\floorVert.vs", "..\\shaders\\floorFrag.fs");
 	Shader postprocess("..\\shaders\\PP.vs", "..\\shaders\\PP.fs");
-	Shader depthpostprocess("..\\shaders\\DPP.vs", "..\\shaders\\DPP.fs");
+	Shader depthpostprocess("..\\shaders\\PP.vs", "..\\shaders\\DPP.fs");
+	Shader blurshader("..\\shaders\\PP.vs", "..\\shaders\\Blur.fs");
 	SetUniform(cubeshader,floorshader, postprocess,depthpostprocess);
 	SetFBOColourAndDepth();
 	while (!glfwWindowShouldClose(window))
@@ -171,10 +172,23 @@ int main()
 		glEnable(GL_DEPTH_TEST);
 		renderer.RenderScene(cubeshader,floorshader, camera);
 
+		//Blur Colour
+		glBindFramebuffer(GL_FRAMEBUFFER, myFBOBlur);
+		glDisable(GL_DEPTH_TEST);
+
+		blurshader.use();
+		blurshader.setInt("horz", 1);
+		renderer.quad1.RenderQuad(blurshader, colourattachment[0]);
+		blurshader.setInt("horz", 0);
+		renderer.quad1.RenderQuad(blurshader, blurredtexture);
+
 		//Second Pass to Screen
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 		glDisable(GL_DEPTH_TEST);
 		renderer.quad1.RenderQuad(postprocess,colourattachment[0]);
+		if (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS) {
+			renderer.quad1.RenderQuad(postprocess, blurredtexture);
+		}
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();
