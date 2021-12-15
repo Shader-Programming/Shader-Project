@@ -52,7 +52,7 @@ unsigned int depthattachment,blurredtexture;
 unsigned int colourattachment[2];
 
 
-void SetUniform(Shader& shader, Shader& shader2, Shader& shader3, Shader& shader4) {
+void SetUniform(Shader& shader, Shader& shader2, Shader& shader3, Shader& shader4,Shader& shader5) {
 	shader.use();
 	//Cube
 	//dir light
@@ -115,6 +115,9 @@ void SetUniform(Shader& shader, Shader& shader2, Shader& shader3, Shader& shader
 
 	shader4.use();
 	shader4.setInt("image", 0);
+
+	shader5.use();
+	shader5.setInt("image", 0);
 }
 
 int main()
@@ -148,7 +151,7 @@ int main()
 	Shader postprocess("..\\shaders\\PP.vs", "..\\shaders\\PP.fs");
 	Shader depthpostprocess("..\\shaders\\PP.vs", "..\\shaders\\DPP.fs");
 	Shader blurshader("..\\shaders\\PP.vs", "..\\shaders\\Blur.fs");
-	SetUniform(cubeshader,floorshader, postprocess,depthpostprocess);
+	SetUniform(cubeshader,floorshader, postprocess,depthpostprocess,blurshader);
 	SetFBOColourAndDepth();
 	while (!glfwWindowShouldClose(window))
 	{
