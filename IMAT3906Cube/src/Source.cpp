@@ -31,6 +31,7 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 void processInput(GLFWwindow *window);
 void SetFBOColourAndDepth();
+void SetFBOBlur();
 
 
 
@@ -153,6 +154,7 @@ int main()
 	Shader blurshader("..\\shaders\\PP.vs", "..\\shaders\\Blur.fs");
 	SetUniform(cubeshader,floorshader, postprocess,depthpostprocess,blurshader);
 	SetFBOColourAndDepth();
+	SetFBOBlur();
 	while (!glfwWindowShouldClose(window))
 	{
 		cubeshader.use();
@@ -283,4 +285,16 @@ void SetFBOColourAndDepth() {
 	unsigned int attachments[2] = { GL_COLOR_ATTACHMENT0,GL_COLOR_ATTACHMENT1 };
 	glDrawBuffers(2, attachments);
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+
+void SetFBOBlur() {
+	glGenFramebuffers(1, &myFBOBlur);
+	glBindFramebuffer(GL_FRAMEBUFFER, myFBOBlur);
+	glGenTextures(1, &blurredtexture);
+
+	glBindTexture(GL_TEXTURE_2D, blurredtexture);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, SCR_WIDTH, SCR_HEIGHT, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, blurredtexture, 0);
 }
