@@ -14,11 +14,13 @@
 #include "Cube.h"
 #include "Floor.h"
 #include "Quad.h"
+#include "Light.h"
 class Renderer {
 public:
 
 	Renderer(unsigned int scrw,unsigned int scrh);
 	void RenderScene(Shader& shader, Shader& shader2, Camera cam);
+	void RenderLights(Shader& shader, Camera camera);
 	Quad quad1;
 private:
 	void LoadTextureFiles();

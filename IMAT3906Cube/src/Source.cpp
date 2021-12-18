@@ -18,6 +18,7 @@
 
 #include "Cube.h"
 #include "Floor.h"
+#include "Light.h"
 
 
 
@@ -53,29 +54,47 @@ unsigned int depthattachment,blurredtexture;
 unsigned int colourattachment[2];
 
 
-void SetUniform(Shader& shader, Shader& shader2, Shader& shader3, Shader& shader4,Shader& shader5) {
+void SetUniform(Shader& shader, Shader& shader2, Shader& shader3, Shader& shader4,Shader& shader5,Shader& shader6) {
+	float bloombrightness = 0.50f;
 	shader.use();
 	//Cube
 	//dir light
 	glm::vec3 lightdirection = glm::vec3(0, -1, 0);
 	glm::vec3 lightcolor = glm::vec3(1.0, 1.0, 1.0);
+	//glm::vec3 plightpos = glm::vec3(0.0, 3.0, -4.0);
+	//glm::vec3 plightpos2 = glm::vec3(0.0, 3.0, -4.0);
 
-	shader.setVec3("lightcol", lightcolor);
-	shader.setVec3("lightdir", lightdirection);
+	glm::vec3 plightspos[] = {
+		glm::vec3(0.0, 1.0, -4.0),
+		glm::vec3(0.0, 1.0, 4.0)
+	};
 
-	//spot light
-	glm::vec3 plightpos = glm::vec3(0.0, 3.0, -4.0);
-	glm::vec3 plightcol = glm::vec3(5.0, 5.0, 5.0);
+	glm::vec3 plightscol[] = {
+		glm::vec3(0.0, 3.0, 0.0),
+		glm::vec3(0.0, 0.0, 3.0)
+	};
+
 	float kc = 1.0f;
 	float kl = 0.22f;
 	float ke = 0.2f;
-	shader.setVec3("plight.pos", plightpos);
-	shader.setVec3("plight.col", plightcol);
-	shader.setFloat("plight.kc", kc);
-	shader.setFloat("plight.kl", kl);
-	shader.setFloat("plight.ke", ke);
 
-	shader.setVec3("slight.col", glm::vec3(1.0f, 1.0f, 1.0f));
+	shader.setVec3("lightcol", lightcolor);
+	shader.setVec3("lightdir", lightdirection);
+	shader.setFloat("bloombrightness", bloombrightness);
+
+	shader.setVec3("plights[0].pos", plightspos[0]);
+	shader.setVec3("plights[0].col", plightscol[0]);
+	shader.setFloat("plights[0].kc", kc);
+	shader.setFloat("plights[0].kl", kl);
+	shader.setFloat("plights[0].ke", ke);
+
+	shader.setVec3("plights[1].pos", plightspos[1]);
+	shader.setVec3("plights[1].col", plightscol[1]);
+	shader.setFloat("plights[1].kc", kc);
+	shader.setFloat("plights[1].kl", kl);
+	shader.setFloat("plights[1].ke", ke);
+
+	shader.setVec3("slight.col", glm::vec3(2.0f, 2.0f, 2.0f));
 	shader.setFloat("slight.kc", 1.0f);
 	shader.setFloat("slight.kl", 0.027f);
 	shader.setFloat("slight.ke", 0.0028f);
@@ -89,14 +108,21 @@ void SetUniform(Shader& shader, Shader& shader2, Shader& shader3, Shader& shader
 	shader2.use();
 	//Floor
 
-	//spot light
-	shader2.setVec3("plight.pos", plightpos);
-	shader2.setVec3("plight.col", plightcol);
-	shader2.setFloat("plight.kc", kc);
-	shader2.setFloat("plight.kl", kl);
-	shader2.setFloat("plight.ke", ke);
+	shader2.setVec3("plights[0].pos", plightspos[0]);
+	shader2.setVec3("plights[0].col", plightscol[0]);
+	shader2.setFloat("plights[0].kc", kc);
+	shader2.setFloat("plights[0].kl", kl);
+	shader2.setFloat("plights[0].ke", ke);
 
-	shader2.setVec3("slight.col", glm::vec3(1.0f, 1.0f, 1.0f));
+	shader2.setVec3("plights[1].pos", plightspos[1]);
+	shader2.setVec3("plights[1].col", plightscol[1]);
+	shader2.setFloat("plights[1].kc", kc);
+	shader2.setFloat("plights[1].kl", kl);
+	shader2.setFloat("plights[1].ke", ke);
+
+	shader2.setFloat("bloombrightness", bloombrightness);
+
+	shader2.setVec3("slight.col", glm::vec3(2.0f, 2.0f, 2.0f));
 	shader2.setFloat("slight.kc", 1.0f);
 	shader2.setFloat("slight.kl", 0.027f);
 	shader2.setFloat("slight.ke", 0.0028f);
@@ -152,7 +178,9 @@ int main()
 	Shader postprocess("..\\shaders\\PP.vs", "..\\shaders\\PP.fs");
 	Shader depthpostprocess("..\\shaders\\PP.vs", "..\\shaders\\DPP.fs");
 	Shader blurshader("..\\shaders\\PP.vs", "..\\shaders\\Blur.fs");
-	SetUniform(cubeshader,floorshader, postprocess,depthpostprocess,blurshader);
+	Shader bloomshader("..\\shaders\\PP.vs", "..\\shaders\\Bloom.fs");
+	Shader lightshader("..\\shaders\\Light.vs", "..\\shaders\\Light.fs");
+	SetUniform(cubeshader,floorshader, postprocess,depthpostprocess,blurshader,bloomshader);
 	SetFBOColourAndDepth();
 	SetFBOBlur();
 	while (!glfwWindowShouldClose(window))
@@ -172,25 +200,25 @@ int main()
 		processInput(window);
 
 		//First Pass to FBO Colour
-		glBindFramebuffer(GL_FRAMEBUFFER, myFBOColourAndDepth);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);	
+		glBindFramebuffer(GL_FRAMEBUFFER, myFBOColourAndDepth); //at location 0, bright parts at location 1
 		glEnable(GL_DEPTH_TEST);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		renderer.RenderScene(cubeshader,floorshader, camera);
 
-		//Blur Colour
+		//Blur Colour and Attachment Pass
 		glBindFramebuffer(GL_FRAMEBUFFER, myFBOBlur);
 		glDisable(GL_DEPTH_TEST);
 
 		blurshader.use();
 		blurshader.setInt("horz", 1);
-		renderer.quad1.RenderQuad(blurshader, colourattachment[0]);
+		renderer.quad1.RenderQuad(blurshader, colourattachment[1]); //used to be 0
 		blurshader.setInt("horz", 0);
 		renderer.quad1.RenderQuad(blurshader, blurredtexture);
 
 		//Second Pass to Screen
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
-		glDisable(GL_DEPTH_TEST);
-		renderer.quad1.RenderQuad(postprocess,colourattachment[0]);
+		//renderer.quad1.RenderQuad(postprocess,colourattachment[0]);
+		renderer.quad1.RenderQuad(bloomshader, colourattachment[0],blurredtexture);
 		if (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS) {
 			renderer.quad1.RenderQuad(postprocess, blurredtexture);
 		}
@@ -296,5 +324,7 @@ void SetFBOBlur() {
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, SCR_WIDTH, SCR_HEIGHT, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, blurredtexture, 0);
 }

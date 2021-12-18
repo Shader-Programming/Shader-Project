@@ -13,6 +13,17 @@ void Quad::RenderQuad(Shader& shader, unsigned int& textureobj) {
 	glBindVertexArray(0);
 }
 
+void Quad::RenderQuad(Shader& shader, unsigned int& textureobj, unsigned int& textureobj2) {
+	shader.use();
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, textureobj);
+	glActiveTexture(GL_TEXTURE1);
+	glBindTexture(GL_TEXTURE_2D, textureobj2);
+	glBindVertexArray(quadVAO);
+	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+	glBindVertexArray(0);
+}
+
 void Quad::CreateQuad() {
 	// quad data
 	float quadVertices[] = {

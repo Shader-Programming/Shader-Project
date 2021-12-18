@@ -9,14 +9,15 @@
 
 #include "Shader.h"
 #include "Camera.h"
-#include "normalmapper.h"
 
-class Quad {
+class Light {
 public:
-	Quad();
-	void CreateQuad();
-	void RenderQuad(Shader& shader, unsigned int& textureobj);
-	void RenderQuad(Shader& shader, unsigned int& textureobj, unsigned int& textureobj2);
+	Light();
+	void CreateLight();
+	void RenderLight(Shader& shader);
+	unsigned int lightnorm;
+	glm::vec3 lightpos;
+	glm::vec3 lightcolor = glm::vec3(0.1, 0.3, 0.3);
 private:
-	unsigned int quadVBO, quadVAO;
+	unsigned int lightVBO, lightEBO, lightVAO;
 };

@@ -27,6 +27,18 @@ void Renderer::RenderScene(Shader& shader, Shader& shader2, Camera camera) {
 	cube1.RenderCube(shader);
 	floor1.RenderFloor(shader2);
 }
+
+void Renderer::RenderLights(Shader& shader, Camera camera) {
+	// MVP 
+	glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)screenW / (float)screenH, 0.1f, 1000.0f);
+	glm::mat4 view = camera.GetViewMatrix();
+	glm::mat4 model = glm::mat4(1.0f);
+
+	shader.use();
+	shader.setMat4("projection", projection);
+	shader.setMat4("view", view);
+	shader.setMat4("model", model);
+}
 void Renderer::CreateObjects() {
 	cube1.CreateCube();
 	floor1.CreateFloor();

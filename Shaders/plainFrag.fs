@@ -12,15 +12,11 @@ uniform vec3 lightcol;
 uniform vec3 objectcol;
 uniform vec3 lightdir;
 uniform vec3 viewpos;
+uniform float bloombrightness;
 
 uniform sampler2D diffusetexture;
 uniform sampler2D normalmap;
 uniform sampler2D speculartexture;
-
-vec3 getdirlight(vec3 norm, vec3 viewdir);
-vec3 getpointlight(vec3 norm, vec3 viewdir);
-vec3 getspotlight(vec3 norm, vec3 viewdir);
-vec3 getrimlight(vec3 norm, vec3 viewdir);
 
 float ambientfactor = 0.3; //0.3
 float shine = 256; //256
@@ -33,6 +29,8 @@ struct pointlight{
     float kl;
     float ke;
 };
+#define NR_POINT_LIGHTS 2
+uniform pointlight plights[NR_POINT_LIGHTS];
 
 struct spotlight{
     vec3 pos;
@@ -56,7 +54,10 @@ struct rimlight{
     float ke;
 };
 
-uniform pointlight plight;
+vec3 getdirlight(vec3 norm, vec3 viewdir);
+vec3 getpointlight(pointlight plight, vec3 norm, vec3 viewdir);
+vec3 getspotlight(vec3 norm, vec3 viewdir);
+vec3 getrimlight(vec3 norm, vec3 viewdir);
 uniform spotlight slight;
 
 void main()
@@ -68,13 +69,17 @@ void main()
     vec3 viewdir = normalize(viewpos-posWS);
     vec3 result = vec3(0,0,0);
     result = getdirlight(newnorm,viewdir);
-    vec3 plresult = getpointlight(newnorm,viewdir);
-    result = result + plresult;
-    vec3 slresult = getspotlight(newnorm,viewdir);
-    result = result + slresult;
+
+    for(int i = 0; i < NR_POINT_LIGHTS; i++){
+        vec3 plresult = getpointlight(plights[i],newnorm,viewdir);
+        result = result + plresult;
+    }
+
+    //vec3 slresult = getspotlight(newnorm,viewdir);
+    //result = result + slresult;
     FragColor = vec4(result, 1.0);
-    float brightness = max(max(result.r,result.g),result.b);
-    if(brightness > 0.35){
+    float brightness = max(max(result.x,result.y),result.z);
+    if(brightness > bloombrightness){
         BrightColor = FragColor;
     }else{
         BrightColor = vec4(vec3(0.0),1.0);
@@ -102,7 +107,7 @@ vec3 getdirlight(vec3 norm, vec3 viewdir){
     return result;
 }
 
-vec3 getpointlight(vec3 norm,vec3 viewdir){
+vec3 getpointlight(pointlight plight, vec3 norm,vec3 viewdir){
     //point light stuff
     float dist = length(plight.pos-posWS);
     float attn = 1.0/(plight.kc + (plight.kl*dist)+(plight).ke*(dist*dist));
