@@ -220,7 +220,7 @@ int main()
 		//renderer.quad1.RenderQuad(postprocess,colourattachment[0]);
 		renderer.quad1.RenderQuad(bloomshader, colourattachment[0],blurredtexture);
 		if (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS) {
-			renderer.quad1.RenderQuad(postprocess, blurredtexture);
+			renderer.quad1.RenderQuad(depthpostprocess, depthattachment);
 		}
 
 		glfwSwapBuffers(window);
