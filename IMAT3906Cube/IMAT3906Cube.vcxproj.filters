@@ -90,5 +90,6 @@
     <None Include="..\Shaders\Bloom.fs" />
     <None Include="..\Shaders\Light.fs" />
     <None Include="..\Shaders\Light.vs" />
+    <None Include="..\Shaders\DoF.fs" />
   </ItemGroup>
 </Project>

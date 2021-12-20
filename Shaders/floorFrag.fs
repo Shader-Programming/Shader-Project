@@ -83,8 +83,8 @@ void main()
         result = result + plresult;
     }
 
-    //vec3 slresult = getspotlight(newnorm,viewdir);
-    //result = result + slresult;
+    vec3 slresult = getspotlight(newnorm,viewdir);
+    result = result + slresult;
 
     if(IsNM == 1){
         texcoords = ParallaxMapping(UV,viewdir);

@@ -33,6 +33,7 @@ void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 void processInput(GLFWwindow *window);
 void SetFBOColourAndDepth();
 void SetFBOBlur();
+void SetFBODoF();
 
 
 
@@ -49,12 +50,12 @@ float lastFrame = 0.0f;
 
 int map = 0;
 
-unsigned int myFBO,MyFBODepth,myFBOColourAndDepth,myFBOBlur;
-unsigned int depthattachment,blurredtexture;
+unsigned int myFBO,MyFBODepth,myFBOColourAndDepth,myFBOBlur,myFBODoF;
+unsigned int blurredtexture,doftexture, depthattachment;
 unsigned int colourattachment[2];
 
 
-void SetUniform(Shader& shader, Shader& shader2, Shader& shader3, Shader& shader4,Shader& shader5,Shader& shader6) {
+void SetUniform(Shader& shader, Shader& shader2, Shader& shader3, Shader& shader4,Shader& shader5,Shader& shader6,Shader& shader7) {
 	float bloombrightness = 0.85f;
 	shader.use();
 	//Cube
@@ -70,8 +71,8 @@ void SetUniform(Shader& shader, Shader& shader2, Shader& shader3, Shader& shader
 	};
 
 	glm::vec3 plightscol[] = {
-		glm::vec3(0.0, 3.0, 0.0),
-		glm::vec3(0.0, 0.0, 3.0)
+		glm::vec3(3.0, 3.0, 3.0),
+		glm::vec3(3.0, 3.0, 3.0)
 	};
 
 	float kc = 1.0f;
@@ -145,6 +146,14 @@ void SetUniform(Shader& shader, Shader& shader2, Shader& shader3, Shader& shader
 
 	shader5.use();
 	shader5.setInt("image", 0);
+
+	shader6.use();
+	shader6.setInt("image", 0);
+	shader6.setInt("bloomblur", 1);
+
+	shader7.use();
+	shader7.setInt("image", 0);
+	shader7.setInt("depthmap", 1);
 }
 
 int main()
@@ -180,9 +189,11 @@ int main()
 	Shader blurshader("..\\shaders\\PP.vs", "..\\shaders\\Blur.fs");
 	Shader bloomshader("..\\shaders\\PP.vs", "..\\shaders\\Bloom.fs");
 	Shader lightshader("..\\shaders\\Light.vs", "..\\shaders\\Light.fs");
-	SetUniform(cubeshader,floorshader, postprocess,depthpostprocess,blurshader,bloomshader);
+	Shader dofshader("..\\shaders\\PP.vs", "..\\shaders\\DoF.fs");
+	SetUniform(cubeshader,floorshader, postprocess,depthpostprocess,blurshader,bloomshader,dofshader);
 	SetFBOColourAndDepth();
 	SetFBOBlur();
+	SetFBODoF();
 	while (!glfwWindowShouldClose(window))
 	{
 		cubeshader.use();
@@ -220,7 +231,8 @@ int main()
 		//renderer.quad1.RenderQuad(postprocess,colourattachment[0]);
 		renderer.quad1.RenderQuad(bloomshader, colourattachment[0],blurredtexture);
 		if (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS) {
-			renderer.quad1.RenderQuad(depthpostprocess, depthattachment);
+			renderer.quad1.RenderQuad(dofshader, colourattachment[0],depthattachment);
+			//renderer.quad1.RenderQuad(dofshader, colourattachment[0],depthattachment);
 		}
 
 		glfwSwapBuffers(window);
@@ -308,6 +320,8 @@ void SetFBOColourAndDepth() {
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, SCR_WIDTH, SCR_HEIGHT, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_BYTE, NULL);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depthattachment, 0);
 
 	unsigned int attachments[2] = { GL_COLOR_ATTACHMENT0,GL_COLOR_ATTACHMENT1 };
@@ -321,6 +335,20 @@ void SetFBOBlur() {
 	glGenTextures(1, &blurredtexture);
 
 	glBindTexture(GL_TEXTURE_2D, blurredtexture);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, SCR_WIDTH, SCR_HEIGHT, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, blurredtexture, 0);
+}
+
+void SetFBODoF() {
+	glGenFramebuffers(1, &myFBODoF);
+	glBindFramebuffer(GL_FRAMEBUFFER, myFBODoF);
+	glGenTextures(1, &doftexture);
+
+	glBindTexture(GL_TEXTURE_2D, doftexture);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, SCR_WIDTH, SCR_HEIGHT, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);

@@ -4,24 +4,25 @@ float LinearizeDepth(float depth);
 
 out vec4 FragColor;
 uniform sampler2D image;
+uniform sampler2D depthmap;
 
 in vec2 uv;
 const float near_plane = 1;
 const float far_plane = 100;
 
 void main(){
-	float depth = texture(image,uv).r;
-	float focuspoint = texture(image,vec2(0.5,0.5)).r;
+	float depth = texture(depthmap,uv).b;
+	float focuspoint = texture(depthmap,vec2(0.5,0.5)).b;
 	float result1 = LinearizeDepth(depth)/far_plane;
 	float result2 = LinearizeDepth(focuspoint)/far_plane;
 
-	float distance = (result2-result1);
+	float distance = (focuspoint-depth);
 
 	//FragColor = vec4(vec3(distance),1.0);
-	if(result1 > 0.3f && result1 < 0.7f){
-		FragColor = vec4(vec3(result1),1.0);
+	if(distance < 0.1f){
+		FragColor = vec4(texture(image,uv).rgb,1.0);
 	}else{
-		FragColor = vec4(vec3(0.0f),1.0);
+		FragColor = vec4(vec3(0.0),1.0);
 	}
 }
 

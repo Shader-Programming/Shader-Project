@@ -75,8 +75,8 @@ void main()
         result = result + plresult;
     }
 
-    //vec3 slresult = getspotlight(newnorm,viewdir);
-    //result = result + slresult;
+    vec3 slresult = getspotlight(newnorm,viewdir);
+    result = result + slresult;
     FragColor = vec4(result, 1.0);
     float brightness = max(max(result.x,result.y),result.z);
     if(brightness > bloombrightness){

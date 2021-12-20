@@ -172,6 +172,7 @@
   <ItemGroup>
     <None Include="..\Shaders\Bloom.fs" />
     <None Include="..\Shaders\Blur.fs" />
+    <None Include="..\Shaders\DoF.fs" />
     <None Include="..\Shaders\DPP.fs" />
     <None Include="..\Shaders\floorFrag.fs" />
     <None Include="..\Shaders\floorVert.vs" />
