@@ -55,7 +55,7 @@ unsigned int colourattachment[2];
 
 
 void SetUniform(Shader& shader, Shader& shader2, Shader& shader3, Shader& shader4,Shader& shader5,Shader& shader6) {
-	float bloombrightness = 0.50f;
+	float bloombrightness = 0.85f;
 	shader.use();
 	//Cube
 	//dir light
