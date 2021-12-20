@@ -182,6 +182,8 @@
     <None Include="..\Shaders\plainVert.vs" />
     <None Include="..\Shaders\PP.fs" />
     <None Include="..\Shaders\PP.vs" />
+    <None Include="..\Shaders\SM.fs" />
+    <None Include="..\Shaders\SM.vs" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

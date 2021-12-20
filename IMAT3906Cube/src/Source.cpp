@@ -50,8 +50,9 @@ float lastFrame = 0.0f;
 
 int map = 0;
 
-unsigned int myFBO,MyFBODepth,myFBOColourAndDepth,myFBOBlur,myFBODoF;
-unsigned int blurredtexture,doftexture, depthattachment;
+const unsigned int SHADOW_WIDTH = 1024, SHADOW_HEIGHT = 1024;
+unsigned int myFBO,MyFBODepth,myFBOColourAndDepth,myFBOBlur,myFBODoF,myFBOShadowMap;
+unsigned int blurredtexture,doftexture, depthattachment, shadowmap;
 unsigned int colourattachment[2];
 
 
@@ -60,7 +61,7 @@ void SetUniform(Shader& shader, Shader& shader2, Shader& shader3, Shader& shader
 	shader.use();
 	//Cube
 	//dir light
-	glm::vec3 lightdirection = glm::vec3(0, -1, 0);
+	glm::vec3 lightdirection = glm::vec3(0.5, -2.0, -2.0);
 	glm::vec3 lightcolor = glm::vec3(1.0, 1.0, 1.0);
 	//glm::vec3 plightpos = glm::vec3(0.0, 3.0, -4.0);
 	//glm::vec3 plightpos2 = glm::vec3(0.0, 3.0, -4.0);
@@ -355,4 +356,24 @@ void SetFBODoF() {
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, blurredtexture, 0);
+}
+
+void SetFBOShadows() {
+	glGenFramebuffers(1, &myFBOShadowMap);
+	glBindFramebuffer(GL_FRAMEBUFFER, myFBOShadowMap);
+	glGenTextures(1, &shadowmap);
+
+	glBindTexture(GL_TEXTURE_2D, shadowmap);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, SHADOW_WIDTH, SHADOW_HEIGHT, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, blurredtexture, 0);
+
+	glBindFramebuffer(GL_FRAMEBUFFER, myFBOShadowMap);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, shadowmap, 0);
+	glDrawBuffer(GL_NONE);
+	glReadBuffer(GL_NONE);
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
