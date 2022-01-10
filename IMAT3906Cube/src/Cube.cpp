@@ -15,11 +15,13 @@ void Cube::RenderCube(Shader& shader) {
 	glActiveTexture(GL_TEXTURE2);
 	glBindTexture(GL_TEXTURE_2D, cubenorm);
 
+	glm::mat4 model = glm::mat4(1.0f);
+	shader.setMat4("model", model);
 	glBindVertexArray(cubeVAO);  // bind and draw cube
 	glBindBuffer(GL_ARRAY_BUFFER, cubeVBO);
 	glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
 
-	glm::mat4 model = glm::mat4(1.0f);
+	model = glm::mat4(1.0f);
 	model = glm::translate(model, glm::vec3(0, 0, -3));
 	shader.setMat4("model", model);
 	glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);

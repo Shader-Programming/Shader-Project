@@ -26,17 +26,20 @@
 const unsigned int SCR_WIDTH = 1200;
 const unsigned int SCR_HEIGHT = 900;
 
+const unsigned int SHADOW_WIDTH = 1024;
+const unsigned int SHADOW_HEIGHT = 1024;
+
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 void processInput(GLFWwindow *window);
-void SetFBOColourAndDepth();
-void SetFBOBlur();
-void SetFBODoF();
+//void SetFBOColourAndDepth();
+//void SetFBOBlur();
+//void SetFBODoF();
 void SetFBOShadows();
 
-glm::vec3 lightdirection = glm::vec3(0.5, -2.0, -2.0);
+glm::vec3 lightdirection = glm::vec3(0.5f, -2.0, -2.0);
 
 // camera
 Camera camera(glm::vec3(0,0,9));
@@ -50,8 +53,7 @@ float lastFrame = 0.0f;
 
 int map = 0;
 
-const unsigned int SHADOW_WIDTH = 1024, SHADOW_HEIGHT = 1024;
-unsigned int myFBO,MyFBODepth,myFBOColourAndDepth,myFBOBlur,myFBODoF,myFBOShadowMap;
+unsigned int myFBO,MyFBODepth,myFBOColourAndDepth,myFBOBlur,myFBODoF,myFBOShadow;
 unsigned int blurredtexture,doftexture, depthattachment, shadowmap;
 unsigned int colourattachment[2];
 
@@ -183,6 +185,8 @@ int main()
 		return -1;
 	}
 	Renderer renderer(SCR_WIDTH, SCR_HEIGHT);
+
+
 	// simple vertex and fragment shader 
 	Shader cubeshader("..\\shaders\\plainVert.vs", "..\\shaders\\plainFrag.fs");
 	Shader floorshader("..\\shaders\\floorVert.vs", "..\\shaders\\floorFrag.fs");
@@ -192,39 +196,40 @@ int main()
 	Shader bloomshader("..\\shaders\\PP.vs", "..\\shaders\\Bloom.fs");
 	Shader lightshader("..\\shaders\\Light.vs", "..\\shaders\\Light.fs");
 	Shader dofshader("..\\shaders\\PP.vs", "..\\shaders\\DoF.fs");
-	Shader shadowmapshader("..\\shaders\\PP.vs", "..\\shaders\\DoF.fs");
+	Shader shadowmapshader("..\\shaders\\SM.vs", "..\\shaders\\SM.fs");
+
+
 	SetUniform(cubeshader,floorshader, postprocess,depthpostprocess,blurshader,bloomshader,dofshader,shadowmapshader);
-	SetFBOColourAndDepth();
-	SetFBOBlur();
-	SetFBODoF();
 	SetFBOShadows();
 	float orthosize = 10;
 	while (!glfwWindowShouldClose(window))
 	{
-		cubeshader.use();
-		cubeshader.setVec3("slight.pos", camera.Position);
-		cubeshader.setVec3("slight.direction", (camera.Front));
-		cubeshader.setVec3("viewpos", (camera.Position));
-		floorshader.use();
-		floorshader.setInt("IsNM", map);
-		floorshader.setVec3("slight.pos", camera.Position);
-		floorshader.setVec3("slight.direction", (camera.Front));
 		float currentFrame = glfwGetTime();
 		deltaTime = currentFrame - lastFrame;
 		lastFrame = currentFrame;
-
 		processInput(window);
+		//cubeshader.use();
+		//cubeshader.setVec3("slight.pos", camera.Position);
+		//cubeshader.setVec3("slight.direction", (camera.Front));
+		//cubeshader.setVec3("viewpos", (camera.Position));
+		//floorshader.use();
+		//floorshader.setInt("IsNM", map);
+		//floorshader.setVec3("slight.pos", camera.Position);
+		//floorshader.setVec3("slight.direction", (camera.Front));
 
 		//First Pass to FBO Colour
-		glBindFramebuffer(GL_FRAMEBUFFER, myFBOShadowMap); //setfbocolouranddepth
+		glm::mat4 lightprojection = glm::ortho(-orthosize, orthosize, -orthosize, orthosize, -orthosize, 2 * orthosize);
+		glm::mat4 lightview = glm::lookAt(lightdirection * glm::vec3(-1.0), glm::vec3(0.0f), glm::vec3(0.0, 1.0, 0.0));
+		glm::mat4 lightspacematrix = lightview * lightprojection;
+		glViewport(0, 0, SHADOW_WIDTH, SHADOW_HEIGHT);
+		glBindFramebuffer(GL_FRAMEBUFFER, myFBOShadow); //setfbocolouranddepth
 		glEnable(GL_DEPTH_TEST);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		glm::mat4 lightprojection = glm::ortho(-orthosize, orthosize, -orthosize, orthosize, -orthosize, 2*orthosize);
-		glm::mat4 lightview = glm::lookAt(lightdirection*glm::vec3(-1.0),glm::vec3(0.0f), glm::vec3(0.0, 1.0, 0.0));
-		glm::mat4 lightspacematrix = lightview * lightprojection;
 		shadowmapshader.use();
 		shadowmapshader.setMat4("lightspacematrix", lightspacematrix);
 
+		renderer.cube1.CreateCube();
+		renderer.floor1.CreateFloor();
 		renderer.cube1.RenderCube(shadowmapshader);
 		renderer.floor1.RenderFloor(shadowmapshader);
 
@@ -243,10 +248,10 @@ int main()
 		glDisable(GL_DEPTH_TEST);
 		renderer.quad1.RenderQuad(depthpostprocess,shadowmap);
 		//renderer.quad1.RenderQuad(bloomshader, colourattachment[0],blurredtexture);
-		if (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS) {
-			renderer.quad1.RenderQuad(dofshader, colourattachment[0],depthattachment);
-			//renderer.quad1.RenderQuad(dofshader, colourattachment[0],depthattachment);
-		}
+		//if (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS) {
+		//	renderer.quad1.RenderQuad(dofshader, colourattachment[0],depthattachment);
+		//	//renderer.quad1.RenderQuad(dofshader, colourattachment[0],depthattachment);
+		//}
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();
@@ -371,8 +376,8 @@ void SetFBODoF() {
 }
 
 void SetFBOShadows() {
-	glGenFramebuffers(1, &myFBOShadowMap);
-	glBindFramebuffer(GL_FRAMEBUFFER, myFBOShadowMap);
+	glGenFramebuffers(1, &myFBOShadow);
+	glBindFramebuffer(GL_FRAMEBUFFER, myFBOShadow);
 	glGenTextures(1, &shadowmap);
 	glBindTexture(GL_TEXTURE_2D, shadowmap);
 
