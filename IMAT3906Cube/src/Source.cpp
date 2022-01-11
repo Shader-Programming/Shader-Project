@@ -215,6 +215,7 @@ int main()
 
 		//First Pass to fill shadow map
 		glBindFramebuffer(GL_FRAMEBUFFER, FBOShadow); //at location 0, bright parts at location 1
+		glViewport(0, 0, SH_WIDTH, SH_HEIGHT);
 		glEnable(GL_DEPTH_TEST);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -231,6 +232,7 @@ int main()
 
 		//Render to screen
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		glViewport(0, 0, SCR_WIDTH, SCR_HEIGHT);
 		glDisable(GL_DEPTH_TEST);
 		renderer.quad1.CreateQuad();
 		renderer.quad1.RenderQuad(depthpostprocess, depthmap);
