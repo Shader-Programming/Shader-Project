@@ -11,18 +11,7 @@ const float far_plane = 100;
 
 void main(){
 	float depth = texture(image,uv).r;
-	float focuspoint = texture(image,vec2(0.5,0.5)).r;
-	float result1 = LinearizeDepth(depth)/far_plane;
-	float result2 = LinearizeDepth(focuspoint)/far_plane;
-
-	float distance = (result2-result1);
-
-	//FragColor = vec4(vec3(distance),1.0);
-	if(result1 > 0.3f && result1 < 0.7f){
-		FragColor = vec4(vec3(result1),1.0);
-	}else{
-		FragColor = vec4(vec3(0.0f),1.0);
-	}
+	FragColor = vec4(vec3(depth),1.0);
 }
 
 float LinearizeDepth(float depth){
