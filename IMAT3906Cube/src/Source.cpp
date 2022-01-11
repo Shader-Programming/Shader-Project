@@ -65,7 +65,7 @@ void SetUniform(Shader& shader, Shader& shader2, Shader& shader3, Shader& shader
 	shader.use();
 	//Cube
 	//dir light
-	glm::vec3 lightcolor = glm::vec3(1.0, 1.0, 1.0);
+	glm::vec3 lightcolor = glm::vec3(0.5, 0.5, 0.5);
 	//glm::vec3 plightpos = glm::vec3(0.0, 3.0, -4.0);
 	//glm::vec3 plightpos2 = glm::vec3(0.0, 3.0, -4.0);
 
@@ -112,7 +112,8 @@ void SetUniform(Shader& shader, Shader& shader2, Shader& shader3, Shader& shader
 
 	shader2.use();
 	//Floor
-
+	shader2.setVec3("lightcol", lightcolor);
+	shader2.setVec3("lightdir", lightdirection);
 	shader2.setVec3("plights[0].pos", plightspos[0]);
 	shader2.setVec3("plights[0].col", plightscol[0]);
 	shader2.setFloat("plights[0].kc", kc);
@@ -199,14 +200,14 @@ int main()
 	float orthosize = 10;
 	while (!glfwWindowShouldClose(window))
 	{
-		//cubeshader.use();
-		//cubeshader.setVec3("slight.pos", camera.Position);
-		//cubeshader.setVec3("slight.direction", (camera.Front));
-		//cubeshader.setVec3("viewpos", (camera.Position));
-		//floorshader.use();
-		//floorshader.setInt("IsNM", map);
-		//floorshader.setVec3("slight.pos", camera.Position);
-		//floorshader.setVec3("slight.direction", (camera.Front));
+		cubeshader.use();
+		cubeshader.setVec3("slight.pos", camera.Position);
+		cubeshader.setVec3("slight.direction", (camera.Front));
+		cubeshader.setVec3("viewpos", (camera.Position));
+		floorshader.use();
+		floorshader.setInt("IsNM", map);
+		floorshader.setVec3("slight.pos", camera.Position);
+		floorshader.setVec3("slight.direction", (camera.Front));
 		float currentFrame = glfwGetTime();
 		deltaTime = currentFrame - lastFrame;
 		lastFrame = currentFrame;
@@ -233,9 +234,18 @@ int main()
 		//Render to screen
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 		glViewport(0, 0, SCR_WIDTH, SCR_HEIGHT);
-		glDisable(GL_DEPTH_TEST);
-		renderer.quad1.CreateQuad();
-		renderer.quad1.RenderQuad(depthpostprocess, depthmap);
+		//Second pass with "normal shader"
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		cubeshader.use();
+		cubeshader.setInt("depthmap", 4);
+		cubeshader.setMat4("lightspacematrix", lightspacematrix);
+		floorshader.use();
+		floorshader.setInt("depthmap", 4);
+		floorshader.setMat4("lightspacematrix", lightspacematrix);
+		glActiveTexture(GL_TEXTURE4);
+		glBindTexture(GL_TEXTURE_2D, depthmap);
+
+		renderer.RenderScene(cubeshader, floorshader, camera);
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();

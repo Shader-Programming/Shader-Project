@@ -8,6 +8,10 @@ in vec3 posWS;
 in vec2 UV;
 in mat3 TBN;
 
+//Shadow Uniforms
+uniform sampler2D depthmap;
+uniform mat4 lightspacematrix;
+
 uniform vec3 lightcol;
 uniform vec3 objectcol;
 uniform vec3 lightdir;
@@ -58,25 +62,30 @@ struct rimlight{
     float ke;
 };
 
-vec3 getdirlight(vec3 norm, vec3 viewdir);
+vec3 getdirlight(vec3 norm, vec3 viewdir,vec2 texcoords,float shadow);
 vec3 getpointlight(pointlight plight,vec3 norm, vec3 viewdir);
 vec3 getspotlight(vec3 norm, vec3 viewdir);
 vec3 getrimlight(vec3 norm, vec3 viewdir);
 vec2 ParallaxMapping(vec2 texcoords, vec3 viewdir);
-vec3 DirectionalLight(vec3 normal,vec3 lightdir, vec3 viewdir, vec2 texcoords);
+float CalcShadow(vec4 fragposlightspace);
 
 uniform spotlight slight;
 
 void main()
 {   
+    vec4 posLS = lightspacematrix*vec4(posWS,1.0);
+    float shadow = CalcShadow(posLS);
     vec2 texcoords = UV;
     vec3 newnorm = texture(normalmap,UV).xyz;
     newnorm = newnorm*2.0-1.0;
     newnorm = normalize(TBN*newnorm);
 
     vec3 viewdir = normalize(viewpos-posWS);
+    if(IsNM == 1){
+        texcoords = ParallaxMapping(UV,viewdir);
+    }
     vec3 result = vec3(0,0,0);
-    result = getdirlight(newnorm,viewdir);
+    result = getdirlight(newnorm,viewdir,texcoords,shadow);
 
     for(int i = 0; i < NR_POINT_LIGHTS; i++){
         vec3 plresult = getpointlight(plights[i],newnorm,viewdir);
@@ -85,11 +94,6 @@ void main()
 
     vec3 slresult = getspotlight(newnorm,viewdir);
     result = result + slresult;
-
-    if(IsNM == 1){
-        texcoords = ParallaxMapping(UV,viewdir);
-    }
-    result = result+DirectionalLight(newnorm,lightdir,viewdir,texcoords);
     FragColor = vec4(result, 1.0);
     float brightness = max(max(result.x,result.y),result.z);
     if(brightness > bloombrightness){
@@ -99,8 +103,8 @@ void main()
     }
 }
 
-vec3 getdirlight(vec3 norm, vec3 viewdir){
-    vec3 diffmapcol = texture(diffusetexture,UV).xyz;
+vec3 getdirlight(vec3 norm, vec3 viewdir,vec2 texcoords,float shadow){
+    vec3 diffmapcol = texture(diffusetexture,texcoords).xyz;
     vec3 ambientcol = lightcol*diffmapcol*ambientfactor;
 
     //diffuse
@@ -109,14 +113,11 @@ vec3 getdirlight(vec3 norm, vec3 viewdir){
     vec3 diffusecolor = lightcol*diffmapcol*diffusefactor;
 
     //specular
-    float specmapcol = texture(speculartexture,UV).r;
-    vec3 reflectdir = reflect(lightdir,norm);
-    float specularfactor = dot(viewdir,reflectdir);
-    specularfactor = max(specularfactor,0.0);
-    specularfactor = pow(specularfactor,shine);
-    vec3 specularcol = lightcol*specularfactor*specularstrength*specmapcol;
+    vec3 halfway = normalize(lightdir+viewdir);
+    float spec = pow(max(dot(norm,halfway),0.0),shine);
+    vec3 specularcol = lightcol*spec*vec3(texture(speculartexture,texcoords).r);
 
-    vec3 result = ambientcol+diffusecolor+specularcol;
+    vec3 result = ambientcol+(1.0-shadow)*(diffusecolor+specularcol);
     return result;
 }
 
@@ -182,15 +183,16 @@ vec2 ParallaxMapping(vec2 texcoords, vec3 viewdir){
     return texcoords - (viewdir.xy)*(height*PXscale);
 }
 
-vec3 DirectionalLight(vec3 normal,vec3 lightdir, vec3 viewdir, vec2 texcoords){
-    vec3 ambient = texture(diffusetexture,texcoords).rgb;//*light.ambient;
-    float dif = max(dot(normal,lightdir),0.0);
-    vec3 diffuse = dif*(texture(diffusetexture,texcoords)).rgb;//*light.diffuse;
-    //vec3 reflectdir = reflect(-lightdir,normal);
-    //spec = pow(max(dot(viewdir,reflectdir),0.0),mat.shine);
-    vec3 halfway = normalize(lightdir+viewdir);
-    float spec = pow(max(dot(normal,halfway),0.0),shine);
-    vec3 specular = spec*vec3(texture(speculartexture,texcoords).r);
-    return ambient + diffuse + specular;
+float CalcShadow(vec4 fragposlightspace){
+    float bias = 0.015f;
+    vec2 texelsize = 1.0/textureSize(depthmap,0);
+    vec3 projcoords = fragposlightspace.xyz/fragposlightspace.w;
+    projcoords = projcoords*0.5+0.5;
+    float closestdepth = texture(depthmap,projcoords.xy).r;
+    float currentdepth = projcoords.z;
+    float shadow = 0.0;
+    if(currentdepth-bias > closestdepth){
+        shadow = 1.0;
+    }
+    return shadow;
 }
-
