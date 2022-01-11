@@ -26,6 +26,8 @@
 const unsigned int SCR_WIDTH = 1200;
 const unsigned int SCR_HEIGHT = 900;
 
+const unsigned int SH_WIDTH = 1024;
+const unsigned int SH_HEIGHT = 1024;
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
@@ -34,8 +36,9 @@ void processInput(GLFWwindow *window);
 void SetFBOColourAndDepth();
 void SetFBOBlur();
 void SetFBODoF();
+void SetFBODepth();
 
-
+glm::vec3 lightdirection = glm::vec3(0.5, -2.0f, -2.0f);
 
 
 // camera
@@ -52,15 +55,16 @@ int map = 0;
 
 unsigned int myFBO,MyFBODepth,myFBOColourAndDepth,myFBOBlur,myFBODoF;
 unsigned int blurredtexture,doftexture, depthattachment;
+unsigned int depthmap;
+unsigned int FBOShadow;
 unsigned int colourattachment[2];
 
 
-void SetUniform(Shader& shader, Shader& shader2, Shader& shader3, Shader& shader4,Shader& shader5,Shader& shader6,Shader& shader7) {
+void SetUniform(Shader& shader, Shader& shader2, Shader& shader3, Shader& shader4,Shader& shader5,Shader& shader6) {
 	float bloombrightness = 0.85f;
 	shader.use();
 	//Cube
 	//dir light
-	glm::vec3 lightdirection = glm::vec3(0, -1, 0);
 	glm::vec3 lightcolor = glm::vec3(1.0, 1.0, 1.0);
 	//glm::vec3 plightpos = glm::vec3(0.0, 3.0, -4.0);
 	//glm::vec3 plightpos2 = glm::vec3(0.0, 3.0, -4.0);
@@ -150,10 +154,6 @@ void SetUniform(Shader& shader, Shader& shader2, Shader& shader3, Shader& shader
 	shader6.use();
 	shader6.setInt("image", 0);
 	shader6.setInt("bloomblur", 1);
-
-	shader7.use();
-	shader7.setInt("image", 0);
-	shader7.setInt("depthmap", 1);
 }
 
 int main()
@@ -190,50 +190,50 @@ int main()
 	Shader bloomshader("..\\shaders\\PP.vs", "..\\shaders\\Bloom.fs");
 	Shader lightshader("..\\shaders\\Light.vs", "..\\shaders\\Light.fs");
 	Shader dofshader("..\\shaders\\PP.vs", "..\\shaders\\DoF.fs");
-	SetUniform(cubeshader,floorshader, postprocess,depthpostprocess,blurshader,bloomshader,dofshader);
-	SetFBOColourAndDepth();
-	SetFBOBlur();
-	SetFBODoF();
+	Shader shadowmapshader("..\\shaders\\SM.vs", "..\\shaders\\SM.fs");
+	SetUniform(cubeshader,floorshader, postprocess,depthpostprocess,blurshader,bloomshader);
+	//SetFBOColourAndDepth();
+	//SetFBOBlur();
+	//SetFBODoF();
+	SetFBODepth();
+	float orthosize = 10;
 	while (!glfwWindowShouldClose(window))
 	{
-		cubeshader.use();
-		cubeshader.setVec3("slight.pos", camera.Position);
-		cubeshader.setVec3("slight.direction", (camera.Front));
-		cubeshader.setVec3("viewpos", (camera.Position));
-		floorshader.use();
-		floorshader.setInt("IsNM", map);
-		floorshader.setVec3("slight.pos", camera.Position);
-		floorshader.setVec3("slight.direction", (camera.Front));
+		//cubeshader.use();
+		//cubeshader.setVec3("slight.pos", camera.Position);
+		//cubeshader.setVec3("slight.direction", (camera.Front));
+		//cubeshader.setVec3("viewpos", (camera.Position));
+		//floorshader.use();
+		//floorshader.setInt("IsNM", map);
+		//floorshader.setVec3("slight.pos", camera.Position);
+		//floorshader.setVec3("slight.direction", (camera.Front));
 		float currentFrame = glfwGetTime();
 		deltaTime = currentFrame - lastFrame;
 		lastFrame = currentFrame;
 
 		processInput(window);
 
-		//First Pass to FBO Colour
-		glBindFramebuffer(GL_FRAMEBUFFER, myFBOColourAndDepth); //at location 0, bright parts at location 1
+		//First Pass to fill shadow map
+		glBindFramebuffer(GL_FRAMEBUFFER, FBOShadow); //at location 0, bright parts at location 1
 		glEnable(GL_DEPTH_TEST);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		renderer.RenderScene(cubeshader,floorshader, camera);
 
-		//Blur Colour and Attachment Pass
-		glBindFramebuffer(GL_FRAMEBUFFER, myFBOBlur);
-		glDisable(GL_DEPTH_TEST);
+		glm::mat4 lightprojection = glm::ortho(-orthosize, orthosize, -orthosize, orthosize, -orthosize, orthosize * 2);
+		glm::mat4 lightview = glm::lookAt(lightdirection * glm::vec3(-1.0f), glm::vec3(0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+		glm::mat4 lightspacematrix = lightprojection * lightview;
+		shadowmapshader.use();
+		shadowmapshader.setMat4("lightspacematrix", lightspacematrix);
 
-		blurshader.use();
-		blurshader.setInt("horz", 1);
-		renderer.quad1.RenderQuad(blurshader, colourattachment[1]); //used to be 0
-		blurshader.setInt("horz", 0);
-		renderer.quad1.RenderQuad(blurshader, blurredtexture);
+		renderer.cube1.CreateCube();
+		renderer.floor1.CreateFloor();
+		renderer.cube1.RenderCube(shadowmapshader);
+		renderer.floor1.RenderFloor(shadowmapshader);
 
-		//Second Pass to Screen
+		//Render to screen
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
-		//renderer.quad1.RenderQuad(postprocess,colourattachment[0]);
-		renderer.quad1.RenderQuad(bloomshader, colourattachment[0],blurredtexture);
-		if (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS) {
-			renderer.quad1.RenderQuad(dofshader, colourattachment[0],depthattachment);
-			//renderer.quad1.RenderQuad(dofshader, colourattachment[0],depthattachment);
-		}
+		glDisable(GL_DEPTH_TEST);
+		renderer.quad1.CreateQuad();
+		renderer.quad1.RenderQuad(depthpostprocess, depthmap);
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();
@@ -355,4 +355,20 @@ void SetFBODoF() {
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, blurredtexture, 0);
+}
+void SetFBODepth() {
+	glGenFramebuffers(1, &FBOShadow);
+	glBindFramebuffer(GL_FRAMEBUFFER, FBOShadow);
+	glGenTextures(1, &depthmap);
+	glBindTexture(GL_TEXTURE_2D, depthmap);
+
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, SH_WIDTH, SH_HEIGHT, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_BYTE, NULL);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depthmap, 0);
+
+	glDrawBuffer(GL_NONE);
+	glReadBuffer(GL_NONE);
+
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }

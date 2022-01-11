@@ -17,6 +17,7 @@ public:
 	void CreateQuad();
 	void RenderQuad(Shader& shader, unsigned int& textureobj);
 	void RenderQuad(Shader& shader, unsigned int& textureobj, unsigned int& textureobj2);
+	unsigned int testtex;
 private:
 	unsigned int quadVBO, quadVAO;
 };

@@ -22,13 +22,13 @@ public:
 	void RenderScene(Shader& shader, Shader& shader2, Camera cam);
 	void RenderLights(Shader& shader, Camera camera);
 	Quad quad1;
+	Cube cube1;
+	Floor floor1;
 private:
 	void LoadTextureFiles();
 	unsigned int LoadTexture(char const* path);
 	unsigned int screenW, screenH;
 	void CreateObjects();
-	Cube cube1;
-	Floor floor1;
 };
 
 #endif

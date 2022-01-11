@@ -52,6 +52,7 @@ void Renderer::LoadTextureFiles() {
 	floor1.floornorm = LoadTexture("..\\Textures\\wood\\normal.jpg");
 	floor1.floorspec = LoadTexture("..\\Textures\\wood\\specular.jpg");
 	floor1.floordisp = LoadTexture("..\\Textures\\wood\\displacement.jpg");
+	quad1.testtex = LoadTexture("..\\Textures\\metalPlate\\diffuse.jpg");
 }
 
 unsigned int Renderer::LoadTexture(char const* path) {
