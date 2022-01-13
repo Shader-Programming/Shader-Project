@@ -75,8 +75,8 @@ void SetUniform(Shader& shader, Shader& shader2, Shader& shader3, Shader& shader
 	};
 
 	glm::vec3 plightscol[] = {
-		glm::vec3(3.0, 3.0, 3.0),
-		glm::vec3(3.0, 3.0, 3.0)
+		glm::vec3(0.0, 0.0, 6.0),
+		glm::vec3(2.0, 2.0, 2.0)
 	};
 
 	float kc = 1.0f;
@@ -139,7 +139,7 @@ void SetUniform(Shader& shader, Shader& shader2, Shader& shader3, Shader& shader
 	shader2.setInt("speculartexture", 1);
 	shader2.setInt("normalmap", 2);
 	shader2.setInt("displacementmap", 3);
-	shader2.setFloat("PXscale", 0.0175);
+	shader2.setFloat("PXscale", 0.03); //0.0175
 	shader2.setVec3("mat.ambient", glm::vec3(1, 1, 1));
 	shader2.setFloat("mat.shine", 265);
 
@@ -193,8 +193,8 @@ int main()
 	Shader dofshader("..\\shaders\\PP.vs", "..\\shaders\\DoF.fs");
 	Shader shadowmapshader("..\\shaders\\SM.vs", "..\\shaders\\SM.fs");
 	SetUniform(cubeshader,floorshader, postprocess,depthpostprocess,blurshader,bloomshader);
-	//SetFBOColourAndDepth();
-	//SetFBOBlur();
+	SetFBOColourAndDepth();
+	SetFBOBlur();
 	//SetFBODoF();
 	SetFBODepth();
 	float orthosize = 10;
@@ -231,6 +231,8 @@ int main()
 		renderer.cube1.RenderCube(shadowmapshader);
 		renderer.floor1.RenderFloor(shadowmapshader);
 
+
+
 		//Render to screen
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 		glViewport(0, 0, SCR_WIDTH, SCR_HEIGHT);
@@ -245,7 +247,31 @@ int main()
 		glActiveTexture(GL_TEXTURE4);
 		glBindTexture(GL_TEXTURE_2D, depthmap);
 
+		//FBO Stuff
+		glBindFramebuffer(GL_FRAMEBUFFER, myFBOColourAndDepth); //at location 0, bright parts at location 1
+		glEnable(GL_DEPTH_TEST);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		renderer.RenderScene(cubeshader, floorshader, camera);
+
+		//Blur Colour and Attachment Pass
+		glBindFramebuffer(GL_FRAMEBUFFER, myFBOBlur);
+		glDisable(GL_DEPTH_TEST);
+
+		blurshader.use();
+		blurshader.setInt("horz", 1);
+		renderer.quad1.RenderQuad(blurshader, colourattachment[1]); //used to be 0
+		blurshader.setInt("horz", 0);
+		renderer.quad1.RenderQuad(blurshader, blurredtexture);
+
+		//Second Pass to Screen
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		renderer.quad1.RenderQuad(bloomshader, colourattachment[0], blurredtexture);
+		if (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS) { //Bloom Show
+			renderer.quad1.RenderQuad(postprocess, blurredtexture);
+		}
+		if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS) { //Ortho
+			renderer.quad1.RenderQuad(depthpostprocess, depthmap);
+		}
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();

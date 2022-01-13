@@ -158,7 +158,7 @@ vec3 getspotlight(vec3 norm, vec3 viewdir){
     vec3 specularcol = slight.col*specularfactor*specmapcol;
     specularcol = specularcol*attn;
 
-    float theta = dot(-slightdir,normalize(slight.direction));
+    float theta = dot(slightdir,normalize(-slight.direction));
     float denom = (slight.innerrad-slight.outerrad);
     float illumination = (theta-slight.outerrad)/denom;
     illumination = clamp(illumination,0.0,1.0);

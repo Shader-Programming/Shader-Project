@@ -167,7 +167,7 @@ vec3 getspotlight(vec3 norm, vec3 viewdir){
     vec3 specularcol = slight.col*specularfactor*specmapcol;
     specularcol = specularcol*attn;
 
-    float theta = dot(-slightdir,normalize(slight.direction));
+    float theta = dot(slightdir,normalize(-slight.direction));
     float denom = (slight.innerrad-slight.outerrad);
     float illumination = (theta-slight.outerrad)/denom;
     illumination = clamp(illumination,0.0,1.0);
@@ -179,8 +179,23 @@ vec3 getspotlight(vec3 norm, vec3 viewdir){
 }
 
 vec2 ParallaxMapping(vec2 texcoords, vec3 viewdir){
+    //float height = texture(displacementmap,texcoords).r;
+    //vec2 P = (viewdir.xy)*(height*PXscale);
+    //return texcoords - P;
     float height = texture(displacementmap,texcoords).r;
-    return texcoords - (viewdir.xy)*(height*PXscale);
+    float numlayers = 5;
+    float layerdepth = 1.0/numlayers;
+    float currentlayerdepth = 0.0;
+    vec2 P = (viewdir.xy)*(height*PXscale);
+    vec2 deltatexcoords = P/numlayers;
+    vec2 currenttexcoords = texcoords;
+    float currentdepthmapvalue = texture(displacementmap,currenttexcoords).r;
+    while(currentlayerdepth < currentdepthmapvalue){
+        currenttexcoords -= deltatexcoords;
+        currentdepthmapvalue = texture(displacementmap,currenttexcoords).r;
+        currentlayerdepth += layerdepth;
+    }
+    return currenttexcoords;
 }
 
 float CalcShadow(vec4 fragposlightspace){
